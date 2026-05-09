@@ -1,12 +1,12 @@
 package cli
 
 import (
-	"errors"
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/joaohgf/magalu-cli/internal/cli/start"
 	"github.com/joaohgf/magalu-cli/internal/cli/task"
+	handler "github.com/joaohgf/magalu-cli/internal/runner/root"
 	"github.com/nanobox-io/scribble"
 	"github.com/spf13/cobra"
 )
@@ -20,46 +20,32 @@ const (
 	version = "0.1.0"
 )
 
-var (
-	// skipInitCheck lists commands that are allowed before start is run.
-	skipInitCheck = map[string]bool{
-		"start":      true,
-		"help":       true,
-		"completion": true,
-	}
-)
-
 // buildRootCommandHandler creates the root command for the CLI application.
 // The root command does not perform any action when executed;
 // instead, it displays the help message to guide users on how to use the CLI.
 func buildRootCommandHandler() *cobra.Command {
+	runner := handler.NewRunner()
 	cmd := &cobra.Command{
-		Use:     useRoot,
-		Short:   shortDescriptionRoot,
-		Long:    longDescriptionRoot,
-		Version: version,
-		Run: func(cmd *cobra.Command, args []string) {
-			err := cmd.Help()
-			if err != nil {
-				os.Exit(1)
-			}
-		},
-	}
-	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		if skipInitCheck[cmd.Name()] {
-			return nil
-		}
-		if _, err := os.Stat("./tarefeiro/"); errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("configuration not found. Please run '%s start' to set up the CLI", cmd.Root().Name())
-		}
-		return nil
+		Use:               useRoot,
+		Short:             shortDescriptionRoot,
+		Long:              longDescriptionRoot,
+		Version:           version,
+		RunE:              runner.Run,
+		PersistentPreRunE: runner.PreRun,
 	}
 	return cmd
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute(db *scribble.Driver) {
+func Execute() {
+	db, err := scribble.New("./tarefeiro", nil)
+	if err != nil {
+		logger := log.Default()
+		logger.SetOutput(os.Stderr)
+		logger.Printf("Failed to initialize database: %v", err)
+		os.Exit(1)
+	}
 	root := buildRootCommandHandler()
 	commands := []*cobra.Command{
 		start.BuildStartCommandHandler(db),
@@ -71,7 +57,7 @@ func Execute(db *scribble.Driver) {
 		task.BuildDeleteCommandHandler(db),
 	}
 	root.AddCommand(commands...)
-	err := root.Execute()
+	err = root.Execute()
 	if err != nil {
 		os.Exit(1)
 	}

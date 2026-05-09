@@ -21,7 +21,7 @@ const (
 func BuildTaskShowCommandHandler(db *scribble.Driver) *cobra.Command {
 	repository := persistence.NewServiceFinder[*domain.Task](db)
 	rule := usecase.NewFind(repository)
-	renderer := render.NewDetail()
+	renderer := render.NewDetail(nil)
 	runner := handler.NewFindRunner(rule, renderer)
 	cmd := &cobra.Command{
 		Use:   taskShowUse,

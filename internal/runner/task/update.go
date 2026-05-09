@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
-	"github.com/joaohgf/magalu-cli/internal/core/enum"
+	"github.com/joaohgf/magalu-cli/internal/enum"
 	"github.com/joaohgf/magalu-cli/internal/port"
 	"github.com/spf13/cobra"
 )
@@ -26,10 +26,7 @@ func (ur *UpdateRunner) Run(cmd *cobra.Command, args []string) error {
 	task := &domain.Task{ID: id}
 	task.Title = cmd.Flag("title").Value.String()
 	task.Description = cmd.Flag("description").Value.String()
-	tags, err := cmd.Flags().GetStringSlice("tags")
-	if err != nil {
-		return fmt.Errorf("failed to get tags: %w", err)
-	}
+	tags, _ := cmd.Flags().GetStringSlice("tags")
 	task.Tags = tags
 	priority := cmd.Flag("priority").Value.String()
 	if priority != "" {

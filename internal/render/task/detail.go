@@ -7,22 +7,24 @@ import (
 	"time"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
-	"github.com/joaohgf/magalu-cli/internal/core/enum"
+	"github.com/joaohgf/magalu-cli/internal/enum"
 	"github.com/olekukonko/tablewriter"
 	"github.com/olekukonko/tablewriter/tw"
 )
 
 type Detail struct {
 	*tablewriter.Table
+	config *domain.ConfigCommand
 }
 
-func NewDetail() *Detail {
+func NewDetail(config *domain.ConfigCommand) *Detail {
 	table := &Detail{
 		Table: tablewriter.NewTable(
 			os.Stdout,
 			tablewriter.WithHeaderAlignment(tw.AlignLeft),
 			tablewriter.WithRowAutoWrap(tw.WrapNormal),
 		),
+		config: config,
 	}
 	return table
 }

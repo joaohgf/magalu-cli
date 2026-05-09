@@ -2,7 +2,7 @@ package task
 
 import (
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
-	"github.com/joaohgf/magalu-cli/internal/core/enum"
+	enum "github.com/joaohgf/magalu-cli/internal/enum"
 	"github.com/joaohgf/magalu-cli/internal/port"
 	"github.com/spf13/cobra"
 )
@@ -32,10 +32,6 @@ func (lr *ListRunner) Run(cmd *cobra.Command, _ []string) error {
 	tasks, err := lr.useCase.All(filter)
 	if err != nil {
 		return err
-	}
-	if len(tasks) == 0 {
-		cmd.Println("No tasks found.")
-		return nil
 	}
 	err = lr.render.Render(tasks...)
 	return err

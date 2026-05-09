@@ -21,7 +21,7 @@ func (f *Find) Find(target *domain.Task) (*domain.Task, error) {
 	}
 	task, err := f.persistence.Find(target)
 	if err != nil {
-		return nil, fmt.Errorf("error finding task: %w", err)
+		return nil, fmt.Errorf("finding task: %w", err)
 	}
 	return task, nil
 }

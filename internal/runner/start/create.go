@@ -4,8 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
+	"github.com/joaohgf/magalu-cli/internal/enum"
 	"github.com/joaohgf/magalu-cli/internal/port"
 	"github.com/spf13/cobra"
 )
@@ -19,18 +21,20 @@ func NewRunner(useCase port.SaveUseCase[*domain.ConfigCommand]) *CreateRunner {
 }
 
 func (cr *CreateRunner) Run(cmd *cobra.Command, _ []string) error {
-	config := domain.NewConfigCommand()
-	cmd.Printf("Enter the path of the database file(default is %s):", config.DatabasePath)
+	cmd.Printf("Enter the output[%s] (default is %s):",
+		strings.Join([]string{enum.OutputJSON.String(), enum.OutputYAML.String(), enum.OutputTable.String()}, ", "),
+		enum.OutputTable)
 	reader := bufio.NewReader(os.Stdin)
 	input, err := reader.ReadString('\n')
 	if err != nil {
 		return fmt.Errorf("failed to read input: %w", err)
 	}
-	config.DatabasePath = input
+	config := domain.NewConfigCommand()
+	config.Output = enum.OutputOf(input)
 	config, err = cr.useCase.Save(config)
 	if err != nil {
 		return fmt.Errorf("failed to save configuration: %w", err)
 	}
-	cmd.Printf("Configuration saved in %s\n", config.DatabasePath)
+	cmd.Printf("Configuration saved in %s\n", config.ID)
 	return nil
 }

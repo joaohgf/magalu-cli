@@ -1,6 +1,9 @@
 package task
 
 import (
+	"errors"
+	"os"
+
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/port"
 )
@@ -19,6 +22,9 @@ func NewList(persistence port.PersistenceFinder[*domain.Task]) *List {
 func (l *List) All(target *domain.Task) ([]*domain.Task, error) {
 	tasks, err := l.persistence.FindAll(target)
 	if err != nil {
+		if _, ok := errors.AsType[*os.PathError](err); ok {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return tasks, nil

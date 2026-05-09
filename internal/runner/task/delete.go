@@ -23,5 +23,9 @@ func (dr *DeleteRunner) Run(cmd *cobra.Command, args []string) error {
 	}
 	task := &domain.Task{ID: id}
 	err := dr.useCase.Delete(task)
-	return err
+	if err != nil {
+		return err
+	}
+	cmd.Printf("Task with ID %s deleted successfully\n", id)
+	return nil
 }

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
-	"github.com/joaohgf/magalu-cli/internal/core/enum"
+	"github.com/joaohgf/magalu-cli/internal/enum"
 	"github.com/joaohgf/magalu-cli/internal/port"
 )
 
@@ -25,14 +25,17 @@ func NewUpdate(
 }
 
 func (u *Update) Save(target *domain.Task) (*domain.Task, error) {
+	if target == nil || target.ID == "" {
+		return nil, fmt.Errorf("task ID is required for update")
+	}
 	existing, err := u.finder.Find(target)
 	if err != nil {
 		return nil, fmt.Errorf("task with ID %s not found: %w", target.ID, err)
 	}
-	target = u.setFields(existing, target)
 	if err = u.validate(target); err != nil {
 		return nil, err
 	}
+	target = u.setFields(existing, target)
 	updatedTask, err := u.saver.Save(target)
 	if err != nil {
 		return nil, err
@@ -42,11 +45,9 @@ func (u *Update) Save(target *domain.Task) (*domain.Task, error) {
 
 // validate checks if the target task has valid fields for an update operation.
 func (u *Update) validate(target *domain.Task) error {
-	if target.IsEmpty() {
-		return fmt.Errorf("task cannot be empty")
-	}
-	if target.ID == "" {
-		return fmt.Errorf("task ID is required for update")
+	if target.Title == "" && target.Description == "" && target.Priority.String() == "" &&
+		len(target.Tags) == 0 && (target.EstimatedDoneAt == nil || target.EstimatedDoneAt.IsZero()) {
+		return fmt.Errorf("at least one field must be provided for update")
 	}
 	if target.Priority == enum.PriorityUnknown {
 		return fmt.Errorf("invalid priority value, must be one of: %s",

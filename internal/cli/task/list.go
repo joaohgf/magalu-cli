@@ -21,7 +21,7 @@ const (
 func BuildTaskListCommandHandler(db *scribble.Driver) *cobra.Command {
 	repository := persistence.NewServiceFinder[*domain.Task](db)
 	rule := usecase.NewList(repository)
-	renderer := render.NewList()
+	renderer := render.NewList(nil)
 	runner := handler.NewListRunner(rule, renderer)
 	cmd := &cobra.Command{
 		Use:   taskListUse,

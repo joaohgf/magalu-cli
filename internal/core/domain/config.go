@@ -1,16 +1,18 @@
 package domain
 
-import "github.com/joaohgf/magalu-cli/internal/core/enum"
+import (
+	"github.com/joaohgf/magalu-cli/internal/enum"
+)
 
 type ConfigCommand struct {
 	ID     string
-	Output string
+	Output enum.Output
 }
 
 func NewConfigCommand() *ConfigCommand {
 	return &ConfigCommand{
 		ID:     "default",
-		Output: enum.OutputTable.String(),
+		Output: enum.OutputTable,
 	}
 }
 

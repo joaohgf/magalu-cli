@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
-	"github.com/joaohgf/magalu-cli/internal/core/enum"
+	"github.com/joaohgf/magalu-cli/internal/enum"
 	"github.com/joaohgf/magalu-cli/internal/port"
 	"github.com/oklog/ulid/v2"
 	"github.com/spf13/cobra"
