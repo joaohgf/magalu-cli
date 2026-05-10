@@ -2,369 +2,250 @@
 
 ## Overview
 
-Tarefeiro is a CLI task management application built with Go, following **Clean Architecture principles** with strong separation of concerns through **ports and adapters pattern**.
+Tarefeiro is a Go CLI for local task management. The project follows a ports-and-adapters style with clear separation between:
 
-## Project Structure
+- command layer (`internal/cli`, `internal/runner`)
+- business rules (`internal/core`)
+- contracts (`internal/port`)
+- infrastructure (`internal/persistence`)
+- output rendering (`internal/render`)
 
-```
+## Current Project Structure
+
+```text
 magalu-cli/
-├── cmd/tarefeiro/              # Application entrypoint
-│   └── main.go                 # CLI bootstrap
+├── cmd/tarefeiro/
+│   └── main.go
 ├── internal/
-│   ├── cli/                    # CLI command definitions (Cobra)
-│   │   ├── root.go             # Root command handler
-│   │   ├── start/              # Initialize CLI command
-│   │   └── task/               # Task commands (add, list, update, delete, done, show)
-│   ├── core/                   # Business logic layer
-│   │   ├── domain/             # Domain entities (Task, Config)
-│   │   ├── enum/               # Type-safe enumerations (Status, Priority)
-│   │   └── usecase/            # Use cases (business operations)
-│   ├── persistence/            # Data layer
-│   │   └── service.go          # Generic persistence services
-│   ├── port/                   # Interfaces (contracts)
-│   │   ├── domain.go           # Domain entity contracts
-│   │   ├── persistence.go      # Persistence contracts
-│   │   ├── render.go           # Render contracts
-│   │   ├── runner.go           # Handler contracts
-│   │   └── usecase.go          # Use case contracts
-│   ├── render/                 # Presentation/output formatters
-│   │   └── task/               # Task renderers (table, detail, list)
-│   └── runner/                 # Command handlers (cobra RunE implementations)
-│       ├── root/               # Root handler
-│       ├── start/              # Start/init handler
-│       └── task/               # Task command handlers
-├── go.mod
-├── go.sum
+│   ├── cli/
+│   │   ├── root.go
+│   │   ├── task/
+│   │   │   ├── add.go
+│   │   │   ├── list.go
+│   │   │   ├── show.go
+│   │   │   ├── done.go
+│   │   │   ├── edit.go
+│   │   │   └── delete.go
+│   │   └── report/
+│   │       └── show.go
+│   ├── core/
+│   │   ├── domain/
+│   │   │   ├── task.go
+│   │   │   └── task_filter.go
+│   │   └── usecase/
+│   │       └── task/
+│   │           ├── add.go
+│   │           ├── list.go
+│   │           ├── find.go
+│   │           ├── done.go
+│   │           ├── update.go
+│   │           └── delete.go
+│   ├── enum/
+│   ├── errors/
+│   ├── port/
+│   ├── persistence/
+│   │   ├── saver.go
+│   │   ├── finder.go
+│   │   ├── lister.go
+│   │   └── deleter.go
+│   ├── render/
+│   │   ├── render.go
+│   │   └── task/
+│   │       ├── list.go
+│   │       └── detail.go
+│   └── runner/
+│       ├── root/
+│       │   └── root.go
+│       └── task/
+│           ├── add.go
+│           ├── list.go
+│           ├── find.go
+│           ├── done.go
+│           ├── update.go
+│           └── delete.go
 ├── Makefile
-└── README.md
+├── README.md
+└── ARCHITECTURE.md
 ```
 
-## Architecture Layers
+## Runtime Flow
 
-### 1. **Presentation Layer** (`cli/` + `runner/`)
-Handles user interaction via CLI commands (Cobra framework).
-
-- **CLI Definition** (`internal/cli/`): Defines commands, flags, and command structure
-- **Runners** (`internal/runner/`): Implements the actual business logic that Cobra calls via `RunE`
-
-**Key Components:**
-- `root.go`: Bootstrap, initialization checks, global pre-runs
-- `task/`: Commands for CRUD operations on tasks
-- `start/`: Setup/initialization command
-
-**Example Flow:**
-```
-User Input → Cobra Command → Runner.Run() → UseCase → Domain → Persistence
+```text
+main.go
+  -> cli.Execute(ctx)
+  -> Cobra root command + global flags
+  -> runner.PreRun stores output format in context
+  -> command runner executes
+  -> use case validates/orchestrates
+  -> persistence service reads/writes JSON files (scribble)
+  -> renderer prints Table / JSON / YAML
 ```
 
-### 2. **Business Logic Layer** (`core/`)
-Encapsulates all business rules and domain concepts.
+## CLI Layer
 
-#### **Domain** (`core/domain/`)
-Core entities representing real-world objects:
-- `Task`: Represents a task with title, description, priority, status, timestamps, tags
-- `ConfigCommand`: Configuration data (database path)
+### Root command
 
-**Key Methods:**
-- `GetCollection()`: Returns storage collection name (e.g., "tasks")
-- `GetID()`: Returns unique identifier
-- `IsEqual(other)`: Filtering logic (case-insensitive contains match)
-- `IsOverdue()`: Business rule (task past due date and not done)
-- `MarkAsDone()`: State transition
-- `IsEmpty()`: Checks if entity is uninitialized
+`internal/cli/root.go`:
 
-#### **Enumerations** (`core/enum/`)
-Type-safe enums replacing magic strings:
-- `Status`: todo, in_progress, done, unknown
-- `Priority`: low, medium, high, unknown
-- Color mappings for CLI output
+- creates root command (`tarefeiro`)
+- registers persistent `--output` (`-o`) flag
+- wires all task commands
+- initializes scribble driver at `./tarefeiro`
 
-#### **Use Cases** (`core/usecase/`)
-Orchestrates domain entities and persistence:
-- `Create`: Validates and saves new tasks
-- `List`: Retrieves tasks with filtering
-- `Update`: Modifies existing tasks
-- `Delete`: Removes tasks
-- `Done`: Marks task as completed
+`internal/runner/root/root.go`:
 
-### 3. **Ports & Adapters** (`port/`)
-**Contracts** that define interfaces between layers (dependency inversion).
+- `Run`: shows help for root
+- `PreRun`: injects output type into command context
 
-**Key Interfaces:**
-- `Domain`: Any entity that stores/retrieves (GetCollection, GetID)
-- `FilterDomain[T]`: Entities that support filtering + pagination
-- `Persistence[T]`: Save, Find, FindAll, Delete operations
-- `SaveUseCase[T]`: Save contract
-- `FindAllUseCase[T]`: Query contract  
-- `Renderer`: Render contract for outputting data
+### Available commands
 
-**Example:**
-```go
-type Persistence[T Domain] interface {
-    Save(target T) (T, error)
-    Find(target T) (T, error)
-    FindAll(filter T) ([]T, error)
-    Delete(target T) error
-}
-```
+Current command set:
 
-### 4. **Data Layer** (`persistence/`)
-Implements port contracts for actual storage.
+- `add "Title"`
+- `list`
+- `show <task_id>`
+- `complete`
+- `edit "<task_id>"`
+- `delete "<task_id>"`
 
-**Service Types:**
-- `ServiceSaver[T]`: Saves entities
-- `ServiceFinder[T FilterDomain]`: Queries entities (with filtering)
-- `ServiceDeleter[T]`: Deletes entities
+Notes:
 
-**Storage Backend:** Scribble (file-based JSON store)
-```
-./tarefeiro/
-├── tasks/              # Collection: task entities
-├── config/             # Collection: configuration
-└── start/              # Collection: bootstrap state
-```
+- `list` supports filters (`title`, `description`, `status`, `priority`) and pagination flags (`size`, `page`).
+- `add` and `edit` support tags and estimated done date.
 
-**Filtering Logic:**
-1. `Unmarshal` each JSON item → `T`
-2. Call `T.IsEqual(filter)` 
-3. Append matching items
-4. Return (max 10 items)
+## Domain Layer
 
-### 5. **Presentation Layer** (`render/`)
-Formats domain entities for output.
+### `Task`
 
-**Renderers:**
-- `List`: Compact table view (ID, Title, Priority, Status)
-- `Detail`: Full table with all fields and proper formatting
-- `YAML` (extensible): Could output YAML format
+`internal/core/domain/task.go` represents the aggregate used by all use cases.
 
-**Implementation:**
-- Uses `tablewriter` for structured output
-- Normalizes dates with padding (e.g., `"2006-01-02 15:04"`)
-- Handles nil values gracefully
+Main behaviors:
 
-## Data Flow Examples
+- `MarkAsDone()`
+- `IsOverdue()`
+- `Matches(other *Task)` for filtering
+- identity/storage metadata (`GetID`, `GetCollection`)
 
-### Creating a Task
-```
-CLI Input:
-tarefeiro add "Study Go" --priority high --tags dev,estudos
+### `TaskFilter`
 
-Flow:
-1. Cobra parses flags → CreateRunner
-2. CreateRunner reads args + flags → domain.NewTask()
-3. SaveUseCase validates → calls persistence.Save()
-4. ServiceSaver writes to ./tarefeiro/tasks/{ulid}.json
-5. Response: "Task created with ID: ..."
-```
+`internal/core/domain/task_filter.go` encapsulates:
 
-### Listing Tasks with Filter
-```
-CLI Input:
-tarefeiro list --title study --status done
+- query criteria (`Filter *Task`)
+- pagination (`Page`, `Size`)
+- result envelope (`Data`, `Total`)
 
-Flow:
-1. Cobra parses flags → ListRunner
-2. ListRunner builds filter Task with Title="study", Status=StatusDone
-3. FindAllUseCase calls persistence.FindAll(filter)
-4. ServiceFinder reads all from ./tarefeiro/tasks/
-5. For each file:
-   - Unmarshal → Task
-   - Call filter.IsEqual(task)
-   - If match, append
-6. List renderer formats results as table
-7. Output: Table with matching tasks
-```
+It also implements the filter contract expected by the lister service (`IsEqual`, paging accessors, content setters/getters).
 
-### Initialization (Start Command)
-```
-CLI Input:
-tarefeiro start
+## Use Case Layer
 
-Pre-Check (in root.PersistentPreRunE):
-1. If not "start"/"help"/"completion" → check ./tarefeiro/start/default.json exists
-2. If missing → Error: "CLI not initialized. Run `tarefeiro start` first"
+Task use cases live in `internal/core/usecase/task`:
 
-Start Command:
-1. Prompts user for database path (default: env TAREFEIRO_PATH)
-2. Creates ConfigCommand
-3. SaveUseCase → persistence.Save()
-4. Writes config
-5. Creates bootstrap marker → ./tarefeiro/start/default.json
-6. Future commands: bootstrap check passes
-```
+- `Add` (`add.go`): validates and saves new tasks
+- `List` (`list.go`): validates page/size defaults and fetches filtered results
+- `Find` (`find.go`): fetches one task by ID
+- `Done` (`done.go`): finds + marks complete + saves
+- `Update` (`update.go`): patch-like update flow
+- `Delete` (`delete.go`): removes task by ID
 
-## Key Design Patterns
+The use cases depend on interfaces from `internal/port`, not concrete storage/render code.
 
-### 1. **Generic Services**
-```go
-type ServiceFinder[T FilterDomain[T]] struct { *scribble.Driver }
-```
-Allows same persistence logic for any entity implementing `FilterDomain`.
+## Ports (Contracts)
 
-### 2. **Null Object (IsEqual for Filters)**
-```go
-func (t *Task) IsEqual(other *Task) bool {
-    if t.IsEmpty() {  // Empty filter = match all
-        return true
-    }
-    // Matching logic
-}
-```
+### Persistence contracts (`internal/port/persistence.go`)
 
-### 3. **Dependency Injection**
-Runners receive use cases in constructor:
-```go
-func NewListRunner(useCase port.FindAllUseCase[*Task]) *ListRunner
-```
+- `PersistenceSaver[T]`
+- `PersistenceFinder[T]`
+- `PersistenceLister[T, F]`
+- `PersistenceDeleter[T]`
 
-### 4. **Adapter Pattern**
-- `persistence.ServiceFinder` adapts `scribble.Driver` to `Persistence` port
-- `runner.ListRunner` adapts CLI to business logic
+All methods receive `context.Context`.
 
-### 5. **Strategy Pattern (Filtering)**
-- Each domain entity defines its own filter logic via `IsEqual()`
-- Filtering is composable and extensible
+### Use case contracts (`internal/port/usecase.go`)
 
-## Configuration & Environment
+- `SaveUseCase[T]`
+- `FindUseCase[T]`
+- `FindAllUseCase[T]`
+- `DeleteUseCase[T]`
 
-- **Database Path**: Controlled by `TAREFEIRO_PATH` env or `--path` flag (if added)
-- **Default**: `./tarefeiro/`
-- **Bootstrap Check**: Looks for `./tarefeiro/start/default.json`
-- **Data Format**: JSON files organized by collection
+### Domain/filter contracts (`internal/port/domain.go`)
 
-## Command Lifecycle
+- `Domain`
+- `FilterDomain[T]`
 
-```
-1. User runs: tarefeiro <command> [args] [flags]
-2. Cobra parses input
-3. root.PersistentPreRunE executes:
-   - Checks if bootstrap marker exists
-   - Blocks if not initialized (except start/help)
-4. Runner.Run() executes:
-   - Reads flags/args
-   - Calls use case
-   - Use case calls persistence
-   - Persistence calls storage backend
-   - Result returned through layers
-5. Renderer formats output
-6. Output displayed to terminal
-```
+These are the core abstractions that make generics-based services possible.
 
-## Testing Strategy
+## Persistence Layer
 
-- **Unit Tests**: Domain logic (`IsEqual`, `IsOverdue`, `IsEmpty`)
-- **Integration Tests**: UseCase + Persistence layer
-- **CLI Tests**: Cobra command validation (present in `*_test.go` files)
+The project uses `github.com/nanobox-io/scribble` as a file-based JSON store.
 
-**Example Test Pattern:**
-```go
-func TestTaskIsOverdue(t *testing.T) {
-    // Domain logic testing
-    past := time.Now().Add(-1 * time.Hour)
-    task := &Task{EstimatedDoneAt: &past, Status: StatusTodo}
-    assert.True(t, task.IsOverdue())
-}
+Services are split by responsibility:
 
-func TestListFilterByTitle(t *testing.T) {
-    // Integration testing
-    filter := &Task{Title: "study"}
-    results, err := listUseCase.All(filter)
-    assert.NoError(t, err)
-    assert.Equal(t, 1, len(results))
-}
-```
+- `ServiceSaver`
+- `ServiceFinder`
+- `ServiceLister`
+- `ServiceDeleter`
 
-## Extension Points
+`ServiceLister` behavior (`internal/persistence/lister.go`):
 
-### Adding a New Command
-1. Create domain entity if needed
-2. Define use case in `core/usecase/`
-3. Create runner in `internal/runner/`
-4. Add CLI command builder in `internal/cli/`
-5. Register in `root.go` Execute()
+1. reads all documents from collection
+2. unmarshals each item
+3. applies domain filter (`target.IsEqual(item)`)
+4. paginates filtered items
+5. stores results in filter envelope (`SetContent`, `SetTotal`)
 
-### Adding a New Output Format
-1. Create renderer in `internal/render/task/` (e.g., `json.go`, `csv.go`)
-2. Implement renderer interface
-3. Add `--output` flag to CLI
-4. Switch renderers in runner based on flag
+## Rendering Layer
 
-### Changing Storage Backend
-1. Implement `Persistence` port with new backend (e.g., PostgreSQL, SQLite)
-2. Replace `scribble.Driver` in `Execute()` with new driver
-3. No other changes needed (clean architecture benefit!)
+`internal/render/render.go` acts as an output strategy selector using the context value set by root pre-run.
 
-**Example:**
-```go
-// Old
-db, err := scribble.New(dbPath, nil)
+Supported formats:
 
-// New - with PostgreSQL
-db, err := postgres.New(connString)
-// Everything else stays the same!
-```
+- `table` (default)
+- `json`
+- `yaml`
 
-## Dependencies
+Concrete task views:
 
-- **Cobra**: CLI framework (command parsing)
-- **Scribble**: File-based JSON storage
-- **Tablewriter**: CLI table formatting
-- **YAML**: Data marshaling (extensible)
-- **JSON**: Default data marshaling
-- **ULID**: Unique ID generation (sortable, distributed-friendly)
+- `internal/render/task/list.go` for list results
+- `internal/render/task/detail.go` for single task detail
 
-## Build & Run
+Both implement table/json/yaml outputs.
 
-```bash
-# Build
-make build
+## Data Storage Model
 
-# Local install
-go install ./cmd/tarefeiro
+Scribble persists collections under `./tarefeiro`. For tasks, files are stored under the `tasks` collection (one JSON file per entity ID).
 
-# Run
-tarefeiro --help
-tarefeiro start
-tarefeiro add "Task" --priority high
-tarefeiro list
-tarefeiro list --title study
-tarefeiro update <id> --status done
-tarefeiro delete <id>
-```
+## Testing Strategy (Current)
 
-## Error Handling
+Tests are concentrated in:
 
-- **Pre-Run Checks**: Initialization required before any operation
-- **Domain Validation**: Entity methods check invariants (e.g., `IsEmpty()`)
-- **Persistence Errors**: Wrapped with context for clarity
-- **User Feedback**: Clear error messages guiding next steps
+- `internal/core/usecase/task/*_test.go`
+- `internal/runner/task/*_test.go`
 
-**Example Error Flow:**
-```
-CLI Input: tarefeiro list (without init)
-↓
-root.PersistentPreRunE → Checks for ./tarefeiro/start/default.json
-↓
-Not found → Returns error:
-"CLI not initialized. Run `tarefeiro start` first"
-↓
-User sees message and knows what to do next
-```
+There are unit-test build tags (`//go:build unit`) in the suite, and the Makefile includes targets for running tests and generating coverage outputs.
 
-## Performance Considerations
+## Key Design Decisions
 
-- **Filtering**: Limited to 10 items max (configurable in persistence layer)
-- **File I/O**: Suitable for small-to-medium task lists
-- **Scalability**: Infrastructure-ready (swap Scribble for database without code changes)
+- **Generics across ports/persistence**: reduces duplication while preserving type safety.
+- **Context propagation from root**: global output mode is passed through context.
+- **Use-case centric validation/orchestration**: command runners stay focused on CLI input mapping.
+- **Separate render layer**: output format changes do not affect use cases/persistence.
 
-## Future Improvements
+## How to Extend
 
-1. **Pagination**: Extend `FilterDomain` with proper pagination support
-2. **Database Backend**: PostgreSQL adapter for larger datasets
-3. **Authentication**: User-based task isolation
-4. **Sync**: Cloud sync capability
-5. **Web UI**: API layer + frontend
-6. **Webhooks**: Task event notifications
-7. **Search**: Full-text search with tags/categories
+### Add a new command
 
+1. Create/adjust use case in `internal/core/usecase`
+2. Add runner in `internal/runner`
+3. Add cobra command builder in `internal/cli`
+4. Register command in `internal/cli/root.go`
+
+### Add a new output format
+
+1. Extend `enum.Output`
+2. Add method in `port.View`
+3. Implement it in task renderers
+4. Route in `internal/render/render.go`
+
+### Change storage backend
+
+Replace scribble-backed implementations in `internal/persistence` with another adapter implementing the same persistence interfaces.
