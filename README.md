@@ -1,7 +1,7 @@
 ## Tarefeiro - Task management CLI for the Magalu Cloud challenge
 
 [![Unit Tests](https://github.com/joaohgf/magalu-cli/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/joaohgf/magalu-cli/actions/workflows/unit-tests.yml)
-[![Coverage](https://codecov.io/gh/joaohgf/magalu-cli/graph/badge.svg)](https://codecov.io/gh/joaohgf/magalu-cli)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/joaohgf/magalu-cli/main/.github/badges/coverage.json)](https://github.com/joaohgf/magalu-cli/actions/workflows/unit-tests.yml)
 
 Tarefeiro is a command-line application written in Go to manage tasks locally.
 
@@ -76,4 +76,4 @@ tarefeiro list -t "study"
 ### Test coverage
 
 Coverage is calculated by CI from unit tests and exposed as a badge in this README.
-Click the badge to open the full coverage report with per-file details.
+Click the badge to open the unit test workflow runs.
