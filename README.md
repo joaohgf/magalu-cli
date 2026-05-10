@@ -99,8 +99,47 @@ tarefeiro list
 List tasks with filters:
 
 ```bash
+-- Filter by status and priority
 tarefeiro list -s done -p high
-tarefeiro list -t "study"
+-- Filter by title
+tarefeiro list -t "study" -T work
+-- Filter by description
+tarefeiro list -d "cli"
+-- Paginate results (page 2, 5 items per page)
+tarefeiro list -P 2 -S 5
+```
+
+Show task details by ID:
+
+```bash
+tarefeiro show "01KR8021T5FZE79CSANG5FACK0"
+```
+
+Mark a task as completed:
+
+```bash
+tarefeiro complete "01KR8021T5FZE79CSANG5FACK0"
+```
+
+Edit a task:
+
+```bash
+tarefeiro edit "01KR8021T5FZE79CSANG5FACK0" --title "Study Go deeply" --priority high --tags dev,go
+```
+
+Delete a task:
+
+```bash
+tarefeiro delete "01KR8021T5FZE79CSANG5FACK0"
+```
+
+Use output formats (`table`, `json`, `yaml`):
+#### Default is `table`
+
+```bash
+tarefeiro list -o table
+tarefeiro list -o json
+tarefeiro show "01KR8021T5FZE79CSANG5FACK0" -o yaml
 ```
 
 ### Test coverage
