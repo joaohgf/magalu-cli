@@ -2,3 +2,5 @@
 **/tarefeiro
 cli
 /vendor
+**.html
+coverage.out

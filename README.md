@@ -1,8 +1,4 @@
 ## Tarefeiro - Task management CLI for the Magalu Cloud challenge
-
-[![Unit Tests](https://github.com/joaohgf/magalu-cli/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/joaohgf/magalu-cli/actions/workflows/unit-tests.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/joaohgf/magalu-cli/main/.github/badges/coverage.json)](https://github.com/joaohgf/magalu-cli/actions/workflows/unit-tests.yml)
-
 Tarefeiro is a command-line application written in Go to manage tasks locally.
 
 ### Prerequisites
