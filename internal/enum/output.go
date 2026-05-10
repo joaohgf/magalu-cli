@@ -3,10 +3,11 @@ package enum
 type Output string
 
 const (
-	OutputJSON    Output = "JSON"
-	OutputYAML    Output = "YAML"
-	OutputTable   Output = "TABLE"
-	OutputUnknown Output = "UNKNOWN"
+	OutputDefaultKey Output = "OUTPUT"
+	OutputJSON       Output = "JSON"
+	OutputYAML       Output = "YAML"
+	OutputTable      Output = "TABLE"
+	OutputUnknown    Output = "UNKNOWN"
 )
 
 func (s Output) String() string {

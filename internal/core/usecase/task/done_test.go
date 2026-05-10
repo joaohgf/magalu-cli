@@ -3,7 +3,6 @@
 package task
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
@@ -12,7 +11,7 @@ import (
 
 func TestDoneUseCase(t *testing.T) {
 	t.Run("successfully", doneSuccessfully)
-	t.Run("with error", func(t *testing.T) {
+	t.Run("with errors", func(t *testing.T) {
 		t.Run("when task is nil", doneWithNilTask)
 		t.Run("when task ID is empty", doneWithEmptyTaskID)
 		t.Run("when finding task", doneWithErrorFindingTask)
@@ -23,9 +22,9 @@ func TestDoneUseCase(t *testing.T) {
 func doneSuccessfully(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1"}
-	updatedTask, err := done.Save(task)
+	updatedTask, err := done.Save(t.Context(), task)
 	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+		t.Fatalf("expected no errors, got %v", err)
 	}
 	if updatedTask == nil {
 		t.Fatal("expected updated task, got nil")
@@ -40,68 +39,35 @@ func doneSuccessfully(t *testing.T) {
 
 func doneWithNilTask(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaver), new(mockPersistenceFinder))
-	_, err := done.Save(nil)
+	_, err := done.Save(t.Context(), nil)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
 func doneWithEmptyTaskID(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	task := &domain.Task{ID: ""}
-	_, err := done.Save(task)
+	_, err := done.Save(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
 func doneWithErrorFindingTask(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaver), new(mockPersistenceFinderWithError))
 	task := &domain.Task{ID: "1"}
-	_, err := done.Save(task)
+	_, err := done.Save(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
 func doneWithErrorSavingTask(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaverWithError), new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1"}
-	_, err := done.Save(task)
+	_, err := done.Save(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
-}
-
-/*
-Mocks below
-*/
-
-type (
-	mockPersistenceSaver           struct{}
-	mockPersistenceSaverWithError  struct{}
-	mockPersistenceFinder          struct{}
-	mockPersistenceFinderWithError struct {
-		mockPersistenceFinder
-	}
-)
-
-func (m *mockPersistenceSaver) Save(task *domain.Task) (*domain.Task, error) {
-	return task, nil
-}
-
-func (m *mockPersistenceSaverWithError) Save(_ *domain.Task) (*domain.Task, error) {
-	return nil, fmt.Errorf("failed to save task")
-}
-
-func (m *mockPersistenceFinder) Find(task *domain.Task) (*domain.Task, error) {
-	return task, nil
-}
-
-func (m *mockPersistenceFinder) FindAll(_ *domain.Task) ([]*domain.Task, error) {
-	return nil, nil
-}
-
-func (m *mockPersistenceFinderWithError) Find(_ *domain.Task) (*domain.Task, error) {
-	return nil, fmt.Errorf("failed to find task")
 }

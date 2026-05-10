@@ -1,6 +1,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
@@ -22,16 +23,16 @@ func NewDone(
 	}
 }
 
-func (d *Done) Save(target *domain.Task) (*domain.Task, error) {
+func (d *Done) Save(ctx context.Context, target *domain.Task) (*domain.Task, error) {
 	if target == nil || target.ID == "" {
 		return nil, fmt.Errorf("task ID is required to mark as done")
 	}
-	existing, err := d.finder.Find(target)
+	existing, err := d.finder.Find(ctx, target)
 	if err != nil {
 		return nil, err
 	}
 	existing.MarkAsDone()
-	updatedTask, err := d.saver.Save(existing)
+	updatedTask, err := d.saver.Save(ctx, existing)
 	if err != nil {
 		return nil, err
 	}

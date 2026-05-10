@@ -1,29 +1,30 @@
 package domain
 
 import (
+	"strings"
 	"time"
 
-	enum2 "github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/joaohgf/magalu-cli/internal/enum"
 )
 
 type Task struct {
-	ID              string         `json:"id,omitempty"`
-	Title           string         `json:"title,omitempty"`
-	Description     string         `json:"description,omitempty"`
-	Status          enum2.Status   `json:"status,omitempty"`
-	Priority        enum2.Priority `json:"priority,omitempty"`
-	CreatedAt       time.Time      `json:"created_at,omitempty"`
-	DoneAt          *time.Time     `json:"done_at,omitempty"`
-	EstimatedDoneAt *time.Time     `json:"estimated_done_at,omitempty"`
-	Tags            []string       `json:"tags,omitempty"`
+	ID              string        `json:"id,omitempty" yaml:"id"`
+	Title           string        `json:"title,omitempty" yaml:"title"`
+	Description     string        `json:"description,omitempty" yaml:"description"`
+	Status          enum.Status   `json:"status,omitempty" yaml:"status"`
+	Priority        enum.Priority `json:"priority,omitempty" yaml:"priority"`
+	CreatedAt       time.Time     `json:"created_at,omitempty" yaml:"created_at"`
+	DoneAt          *time.Time    `json:"done_at,omitempty" yaml:"done_at"`
+	EstimatedDoneAt *time.Time    `json:"estimated_done_at,omitempty" yaml:"estimated_done_at"`
+	Tags            []string      `json:"tags,omitempty" yaml:"tags"`
 }
 
-func NewTask(id, title, description string, priority enum2.Priority, createdAt time.Time, tags ...string) *Task {
+func NewTask(id, title, description string, priority enum.Priority, createdAt time.Time, tags ...string) *Task {
 	return &Task{
 		ID:          id,
 		Title:       title,
 		Description: description,
-		Status:      enum2.StatusInProgress,
+		Status:      enum.StatusInProgress,
 		Priority:    priority,
 		CreatedAt:   createdAt,
 		Tags:        tags,
@@ -39,7 +40,7 @@ func (t *Task) GetCollection() string {
 }
 
 func (t *Task) MarkAsDone() {
-	t.Status = enum2.StatusDone
+	t.Status = enum.StatusDone
 	t.DoneAt = new(time.Now())
 }
 
@@ -47,7 +48,7 @@ func (t *Task) IsOverdue() bool {
 	if t.EstimatedDoneAt == nil {
 		return false
 	}
-	condition := time.Now().After(*t.EstimatedDoneAt) && t.Status != enum2.StatusDone
+	condition := time.Now().After(*t.EstimatedDoneAt) && t.Status != enum.StatusDone
 	return condition
 }
 
@@ -55,24 +56,32 @@ func (t *Task) IsEmpty() bool {
 	return t == nil || (t.ID == "" && t.Title == "" && t.Description == "" && t.CreatedAt.IsZero() && t.Priority == "" && t.Status == "")
 }
 
-func (t *Task) IsEqual(other *Task) bool {
+func (t *Task) Matches(other *Task) bool {
 	if t.IsEmpty() {
 		return true
 	}
 	if t.ID != "" && t.ID == other.ID {
 		return true
 	}
-	if t.Title != "" && t.Title == other.Title {
+	if t.Title != "" && strings.Contains(strings.ToLower(other.Title), strings.ToLower(t.Title)) {
 		return true
 	}
-	if t.Description != "" && t.Description == other.Description {
+	if t.Description != "" && strings.Contains(strings.ToLower(other.Description), strings.ToLower(t.Description)) {
 		return true
 	}
-	if t.Status != enum2.StatusUnknown && t.Status == other.Status {
+	if t.Status != enum.StatusUnknown && t.Status == other.Status {
 		return true
 	}
-	if t.Priority != enum2.PriorityUnknown && t.Priority == other.Priority {
+	if t.Priority != enum.PriorityUnknown && t.Priority == other.Priority {
 		return true
 	}
 	return false
+}
+
+func (t *Task) HasAnyUpdate() bool {
+	return t.Title != "" ||
+		t.Description != "" ||
+		(t.Priority != "" && t.Priority != enum.PriorityUnknown) ||
+		len(t.Tags) > 0 ||
+		(t.EstimatedDoneAt != nil && !t.EstimatedDoneAt.IsZero())
 }

@@ -1,6 +1,7 @@
 package task
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -8,39 +9,38 @@ import (
 	"github.com/joaohgf/magalu-cli/internal/enum"
 	"github.com/olekukonko/tablewriter"
 	"github.com/olekukonko/tablewriter/tw"
+	"gopkg.in/yaml.v3"
 )
 
 type List struct {
-	*tablewriter.Table
-	config *domain.ConfigCommand
+	table *tablewriter.Table
 }
 
-func NewList(config *domain.ConfigCommand) *List {
-	table := &List{
-		Table: tablewriter.NewTable(
+func NewList() *List {
+	list := &List{
+		table: tablewriter.NewTable(
 			os.Stdout,
 			tablewriter.WithHeaderAlignment(tw.AlignLeft),
 			tablewriter.WithRowAutoWrap(tw.WrapNormal),
 		),
-		config: config,
 	}
-	return table
+	return list
 }
 
-func (l *List) Render(tasks ...*domain.Task) error {
-	defer l.Table.Close()
-	if len(tasks) == 0 {
-		l.Table.Header([]string{"No tasks found"})
-		err := l.Table.Render()
+func (l *List) Table(filter *domain.TaskFilter) error {
+	defer l.table.Close()
+	if len(filter.Data) == 0 {
+		l.table.Header([]string{"No tasks found"})
+		err := l.table.Render()
 		if err != nil {
 			return fmt.Errorf("failed to render table: %w", err)
 		}
 		return nil
 	}
-	l.Table.Header([]string{"ID", "Title", "Priority", "Status"})
+	l.table.Header([]string{"ID", "Title", "Priority", "Status"})
 	var err error
-	for _, task := range tasks {
-		err = l.Table.Append(
+	for _, task := range filter.Data {
+		err = l.table.Append(
 			[]string{
 				task.ID,
 				task.Title,
@@ -52,9 +52,31 @@ func (l *List) Render(tasks ...*domain.Task) error {
 			return fmt.Errorf("failed to append task to table: %w", err)
 		}
 	}
-	err = l.Table.Render()
+	firstElements := filter.GetSize() * (filter.GetPage() - 1)
+	l.table.Footer([]string{"", "", "", fmt.Sprintf("rows %d - %d", firstElements, filter.GetTotal()+firstElements)})
+	err = l.table.Render()
 	if err != nil {
 		return fmt.Errorf("failed to render table: %w", err)
+	}
+	return nil
+}
+
+func (l *List) JSON(filter *domain.TaskFilter) error {
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")
+	err := encoder.Encode(filter.Data)
+	if err != nil {
+		return fmt.Errorf("failed to encode tasks to JSON: %w", err)
+	}
+	return nil
+}
+
+func (l *List) YAML(filter *domain.TaskFilter) error {
+	encoder := yaml.NewEncoder(os.Stdout)
+	defer encoder.Close()
+	err := encoder.Encode(filter.Data)
+	if err != nil {
+		return fmt.Errorf("failed to encode tasks to YAML: %w", err)
 	}
 	return nil
 }

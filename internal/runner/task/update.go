@@ -36,11 +36,12 @@ func (ur *UpdateRunner) Run(cmd *cobra.Command, args []string) error {
 	if estimatedAt != "" {
 		parsedTime, err := time.Parse(time.DateTime, estimatedAt)
 		if err != nil {
-			return fmt.Errorf("error parsing estimated done at, please use the format: %s", time.DateTime)
+			return fmt.Errorf("errors parsing estimated done at, please use the format: %s", time.DateTime)
 		}
 		task.EstimatedDoneAt = &parsedTime
 	}
-	updated, err := ur.useCase.Save(task)
+	ctx := cmd.Context()
+	updated, err := ur.useCase.Save(ctx, task)
 	if err != nil {
 		return err
 	}

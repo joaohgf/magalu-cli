@@ -6,6 +6,7 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/joaohgf/magalu-cli/internal/errors"
 	"github.com/joaohgf/magalu-cli/internal/port"
 	"github.com/oklog/ulid/v2"
 	"github.com/spf13/cobra"
@@ -43,11 +44,12 @@ func (cr *AddRunner) Run(cmd *cobra.Command, args []string) error {
 	if estimatedDoneAt != "" {
 		parsedTime, err := time.Parse(time.DateTime, estimatedDoneAt)
 		if err != nil {
-			return fmt.Errorf("invalid date format: %w", err)
+			return errors.Invalid(fmt.Sprintf("estimated_done_at: %v", estimatedDoneAt))
 		}
 		task.EstimatedDoneAt = &parsedTime
 	}
-	saved, err := cr.useCase.Save(task)
+	ctx := cmd.Context()
+	saved, err := cr.useCase.Save(ctx, task)
 	if err != nil {
 		return err
 	}

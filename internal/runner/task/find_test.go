@@ -3,6 +3,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 
 func TestFindRunner(t *testing.T) {
 	t.Run("successfully", runFindSuccessfully)
-	t.Run("with error", func(t *testing.T) {
+	t.Run("with errors", func(t *testing.T) {
 		t.Run("when finding task", runFindWithError)
 		t.Run("when rendering task", runRenderWithError)
 	})
@@ -23,7 +24,7 @@ func runFindSuccessfully(t *testing.T) {
 	runner := NewFindRunner(new(mockFindUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
 	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+		t.Fatalf("expected no errors, got %v", err)
 	}
 }
 
@@ -32,7 +33,7 @@ func runFindWithError(t *testing.T) {
 	runner := NewFindRunner(new(mockFindUseCaseWithError), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
@@ -41,7 +42,7 @@ func runRenderWithError(t *testing.T) {
 	runner := NewFindRunner(new(mockFindUseCase), new(mockRenderWithError))
 	err := runner.Run(cmd, []string{"123"})
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
@@ -63,18 +64,18 @@ type (
 	mockRenderWithError      struct{}
 )
 
-func (m *mockFindUseCase) Find(_ *domain.Task) (*domain.Task, error) {
+func (m *mockFindUseCase) Find(_ context.Context, _ *domain.Task) (*domain.Task, error) {
 	return &domain.Task{ID: "123"}, nil
 }
 
-func (m *mockFindUseCaseWithError) Find(_ *domain.Task) (*domain.Task, error) {
-	return nil, fmt.Errorf("error finding task")
+func (m *mockFindUseCaseWithError) Find(_ context.Context, _ *domain.Task) (*domain.Task, error) {
+	return nil, fmt.Errorf("errors finding task")
 }
 
-func (m *mockRender) Render(_ ...*domain.Task) error {
+func (m *mockRender) Render(_ context.Context, _ *domain.Task) error {
 	return nil
 }
 
-func (m *mockRenderWithError) Render(_ ...*domain.Task) error {
-	return fmt.Errorf("error rendering task")
+func (m *mockRenderWithError) Render(_ context.Context, _ *domain.Task) error {
+	return fmt.Errorf("errors rendering task")
 }

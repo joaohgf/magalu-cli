@@ -1,6 +1,11 @@
 package persistence
 
 import (
+	"context"
+	"fmt"
+
+	"github.com/joaohgf/magalu-cli/internal/errors"
+
 	"github.com/joaohgf/magalu-cli/internal/port"
 	"github.com/nanobox-io/scribble"
 )
@@ -13,9 +18,9 @@ func NewServiceDeleter[T port.Domain](db *scribble.Driver) *ServiceDeleter[T] {
 	return &ServiceDeleter[T]{Driver: db}
 }
 
-func (s *ServiceDeleter[T]) Delete(target T) error {
+func (s *ServiceDeleter[T]) Delete(_ context.Context, target T) error {
 	if err := s.Driver.Delete(target.GetCollection(), target.GetID()); err != nil {
-		return ErrNotFound
+		return errors.NotDeleted(fmt.Sprintf("%s with ID %s", target.GetCollection(), target.GetID()))
 	}
 	return nil
 }

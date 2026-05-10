@@ -3,6 +3,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -12,9 +13,9 @@ import (
 
 func TestAddRunner_Run(t *testing.T) {
 	t.Run("run successfully", runAddSuccessfully)
-	t.Run("run with error", func(t *testing.T) {
+	t.Run("run with errors", func(t *testing.T) {
 		t.Run("run with valid estimated_done_at", runAddErrorParsingEstimatedDoneAt)
-		t.Run("error saving task", runAddErrorSavingTask)
+		t.Run("errors saving task", runAddErrorSavingTask)
 	})
 }
 
@@ -29,7 +30,7 @@ func runAddSuccessfully(t *testing.T) {
 	runner := NewAddRunner(new(mockSaveUseCase))
 	err := runner.Run(cmd, []string{"Test Task"})
 	if err != nil {
-		t.Fatalf("expected no error but got: %v", err)
+		t.Fatalf("expected no errors but got: %v", err)
 	}
 }
 
@@ -42,7 +43,7 @@ func runAddErrorParsingEstimatedDoneAt(t *testing.T) {
 	runner := NewAddRunner(nil)
 	err := runner.Run(cmd, []string{"Test Task"})
 	if err == nil {
-		t.Fatal("expected an error but got nil")
+		t.Fatal("expected an errors but got nil")
 	}
 }
 
@@ -55,7 +56,7 @@ func runAddErrorSavingTask(t *testing.T) {
 	runner := NewAddRunner(new(mockSaveUseCaseWithError))
 	err := runner.Run(cmd, []string{""})
 	if err == nil {
-		t.Fatal("expected an error but got nil")
+		t.Fatal("expected an errors but got nil")
 	}
 }
 
@@ -75,11 +76,11 @@ type (
 	mockSaveUseCaseWithError struct{}
 )
 
-func (m *mockSaveUseCase) Save(task *domain.Task) (*domain.Task, error) {
+func (m *mockSaveUseCase) Save(_ context.Context, task *domain.Task) (*domain.Task, error) {
 	task.ID = "mock-id"
 	return task, nil
 }
 
-func (m *mockSaveUseCaseWithError) Save(_ *domain.Task) (*domain.Task, error) {
+func (m *mockSaveUseCaseWithError) Save(_ context.Context, _ *domain.Task) (*domain.Task, error) {
 	return nil, fmt.Errorf("failed to save task")
 }

@@ -3,6 +3,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 
 func TestDeleteRunner(t *testing.T) {
 	t.Run("run successfully", runDeleteSuccessfully)
-	t.Run("run with error", runDeleteWithError)
+	t.Run("run with errors", runDeleteWithError)
 }
 
 func runDeleteSuccessfully(t *testing.T) {
@@ -20,7 +21,7 @@ func runDeleteSuccessfully(t *testing.T) {
 	runner := NewDeleteRunner(new(mockDeleteUseCase))
 	err := runner.Run(cmd, []string{"123"})
 	if err != nil {
-		t.Fatalf("expected no error but got: %v", err)
+		t.Fatalf("expected no errors but got: %v", err)
 	}
 }
 
@@ -29,7 +30,7 @@ func runDeleteWithError(t *testing.T) {
 	runner := NewDeleteRunner(new(mockDeleteUseCaseWithError))
 	err := runner.Run(cmd, []string{"123"})
 	if err == nil {
-		t.Fatal("expected an error but got nil")
+		t.Fatal("expected an errors but got nil")
 	}
 }
 
@@ -48,10 +49,10 @@ type (
 	mockDeleteUseCaseWithError struct{}
 )
 
-func (m *mockDeleteUseCase) Delete(_ *domain.Task) error {
+func (m *mockDeleteUseCase) Delete(_ context.Context, _ *domain.Task) error {
 	return nil
 }
 
-func (m *mockDeleteUseCaseWithError) Delete(_ *domain.Task) error {
+func (m *mockDeleteUseCaseWithError) Delete(_ context.Context, _ *domain.Task) error {
 	return fmt.Errorf("failed to delete task")
 }

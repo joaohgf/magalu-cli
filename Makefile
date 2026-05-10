@@ -6,3 +6,11 @@ build:
 	@go mod vendor
 	@go build -o ./cli ./cmd/tarefeiro
 
+test:
+	@echo "Running tests..."
+	@go test -v ./... --tags=unit
+
+test-output:
+	@echo "Running tests with output..."
+	@go test -v ./... --tags=unit -coverprofile=coverage.out
+	@go tool cover -html=coverage.out -o coverage.html

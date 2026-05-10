@@ -1,11 +1,13 @@
 package cli
 
 import (
-	"log"
-	"os"
+	"context"
+	"fmt"
+	"log/slog"
+	"strings"
 
-	"github.com/joaohgf/magalu-cli/internal/cli/start"
 	"github.com/joaohgf/magalu-cli/internal/cli/task"
+	"github.com/joaohgf/magalu-cli/internal/enum"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/root"
 	"github.com/nanobox-io/scribble"
 	"github.com/spf13/cobra"
@@ -15,7 +17,7 @@ const (
 	useRoot              = "tarefeiro"
 	shortDescriptionRoot = "It's a CLI application to manage your tasks"
 	longDescriptionRoot  = "It's a CLI application to manage your tasks.\n" +
-		"You can create, list, update and delete your tasks with this application.\n\n" +
+		"You can create, list, update and delete your tasks with this application.\n" +
 		"It's a CLI created to resolve the challenge of the Magalu's selection process."
 	version = "0.1.0"
 )
@@ -33,22 +35,23 @@ func buildRootCommandHandler() *cobra.Command {
 		RunE:              runner.Run,
 		PersistentPreRunE: runner.PreRun,
 	}
+	cmd.PersistentFlags().StringP("output", "o", "",
+		fmt.Sprintf("Output format (%s)", strings.Join([]string{
+			enum.OutputTable.String(), enum.OutputJSON.String(), enum.OutputYAML.String()}, ", "),
+		))
 	return cmd
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
+func Execute(ctx context.Context) {
 	db, err := scribble.New("./tarefeiro", nil)
 	if err != nil {
-		logger := log.Default()
-		logger.SetOutput(os.Stderr)
-		logger.Printf("Failed to initialize database: %v", err)
-		os.Exit(1)
+		slog.Log(ctx, slog.LevelError, "failed to initialize database", "errors", err)
+		return
 	}
 	root := buildRootCommandHandler()
 	commands := []*cobra.Command{
-		start.BuildStartCommandHandler(db),
 		task.BuildTaskAddCommandHandler(db),
 		task.BuildTaskListCommandHandler(db),
 		task.BuildTaskShowCommandHandler(db),
@@ -59,6 +62,6 @@ func Execute() {
 	root.AddCommand(commands...)
 	err = root.Execute()
 	if err != nil {
-		os.Exit(1)
+		slog.Log(ctx, slog.LevelError, "failed to execute command", "errors", err)
 	}
 }

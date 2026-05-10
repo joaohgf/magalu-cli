@@ -3,32 +3,33 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
-	enum2 "github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/joaohgf/magalu-cli/internal/enum"
 )
 
 func TestAddUseCase(t *testing.T) {
 	t.Run("successfully", addSuccessfully)
-	t.Run("with error", func(t *testing.T) {
+	t.Run("with errors", func(t *testing.T) {
 		t.Run("validation nil task", addWithNilTask)
 		t.Run("validation empty ID", addWithEmptyID)
 		t.Run("validation empty title", addWithEmptyTitle)
 		t.Run("validation unknown priority", addWithUnknownPriority)
 		t.Run("validation unknown status", addWithUnknownStatus)
-		t.Run("persistence error", addWithPersistenceError)
+		t.Run("persistence errors", addWithPersistenceError)
 	})
 }
 
 func addSuccessfully(t *testing.T) {
 	add := NewAdd(&mockPersistenceSaver{})
-	task := domain.NewTask("1", "Test Task", "Description", enum2.PriorityHigh, time.Now(), "tag1", "tag2")
-	saved, err := add.Save(task)
+	task := domain.NewTask("1", "Test Task", "Description", enum.PriorityHigh, time.Now(), "tag1", "tag2")
+	saved, err := add.Save(t.Context(), task)
 	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+		t.Fatalf("expected no errors, got %v", err)
 	}
 	if saved.ID != task.ID {
 		t.Errorf("expected ID %s, got %s", task.ID, saved.ID)
@@ -54,55 +55,55 @@ func addSuccessfully(t *testing.T) {
 
 func addWithNilTask(t *testing.T) {
 	add := NewAdd(new(mockPersistenceSaver))
-	_, err := add.Save(nil)
+	_, err := add.Save(t.Context(), nil)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
 func addWithEmptyID(t *testing.T) {
 	add := NewAdd(new(mockPersistenceSaver))
-	task := domain.NewTask("", "Test Task", "Description", enum2.PriorityHigh, time.Now())
-	_, err := add.Save(task)
+	task := domain.NewTask("", "Test Task", "Description", enum.PriorityHigh, time.Now())
+	_, err := add.Save(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
 func addWithEmptyTitle(t *testing.T) {
 	add := NewAdd(new(mockPersistenceSaver))
-	task := domain.NewTask("1", "", "Description", enum2.PriorityHigh, time.Now())
-	_, err := add.Save(task)
+	task := domain.NewTask("1", "", "Description", enum.PriorityHigh, time.Now())
+	_, err := add.Save(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
 func addWithUnknownPriority(t *testing.T) {
 	add := NewAdd(new(mockPersistenceSaver))
-	task := domain.NewTask("1", "Test Task", "Description", enum2.PriorityUnknown, time.Now())
-	_, err := add.Save(task)
+	task := domain.NewTask("1", "Test Task", "Description", enum.PriorityUnknown, time.Now())
+	_, err := add.Save(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
 func addWithUnknownStatus(t *testing.T) {
 	add := NewAdd(new(mockPersistenceSaver))
-	task := domain.NewTask("1", "Test Task", "Description", enum2.PriorityHigh, time.Now(), "tag1", "tag2")
-	task.Status = enum2.StatusUnknown
-	_, err := add.Save(task)
+	task := domain.NewTask("1", "Test Task", "Description", enum.PriorityHigh, time.Now(), "tag1", "tag2")
+	task.Status = enum.StatusUnknown
+	_, err := add.Save(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
 func addWithPersistenceError(t *testing.T) {
 	add := NewAdd(&mockPersistenceSaverWithError{})
-	task := domain.NewTask("1", "Test Task", "Description", enum2.PriorityHigh, time.Now(), "tag1", "tag2")
-	_, err := add.Save(task)
+	task := domain.NewTask("1", "Test Task", "Description", enum.PriorityHigh, time.Now(), "tag1", "tag2")
+	_, err := add.Save(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
@@ -115,10 +116,10 @@ type (
 	mockPersistenceSaverWithError struct{}
 )
 
-func (m *mockPersistenceSaver) Save(task *domain.Task) (*domain.Task, error) {
+func (m *mockPersistenceSaver) Save(_ context.Context, task *domain.Task) (*domain.Task, error) {
 	return task, nil
 }
 
-func (m *mockPersistenceSaverWithError) Save(_ *domain.Task) (*domain.Task, error) {
+func (m *mockPersistenceSaverWithError) Save(_ context.Context, _ *domain.Task) (*domain.Task, error) {
 	return nil, fmt.Errorf("failed to save task")
 }

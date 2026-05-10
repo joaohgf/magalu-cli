@@ -1,11 +1,10 @@
 package task
 
 import (
-	"fmt"
-	"strings"
+	"context"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
-	"github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/joaohgf/magalu-cli/internal/errors"
 	"github.com/joaohgf/magalu-cli/internal/port"
 )
 
@@ -24,38 +23,23 @@ func NewUpdate(
 	}
 }
 
-func (u *Update) Save(target *domain.Task) (*domain.Task, error) {
+func (u *Update) Save(ctx context.Context, target *domain.Task) (*domain.Task, error) {
 	if target == nil || target.ID == "" {
-		return nil, fmt.Errorf("task ID is required for update")
+		return nil, errors.Invalid("task ID is required for update")
 	}
-	existing, err := u.finder.Find(target)
+	existing, err := u.finder.Find(ctx, target)
 	if err != nil {
-		return nil, fmt.Errorf("task with ID %s not found: %w", target.ID, err)
-	}
-	if err = u.validate(target); err != nil {
 		return nil, err
 	}
+	if !target.HasAnyUpdate() {
+		return nil, errors.Invalid("no fields to update")
+	}
 	target = u.setFields(existing, target)
-	updatedTask, err := u.saver.Save(target)
+	updatedTask, err := u.saver.Save(ctx, target)
 	if err != nil {
 		return nil, err
 	}
 	return updatedTask, nil
-}
-
-// validate checks if the target task has valid fields for an update operation.
-func (u *Update) validate(target *domain.Task) error {
-	if target.Title == "" && target.Description == "" && target.Priority.String() == "" &&
-		len(target.Tags) == 0 && (target.EstimatedDoneAt == nil || target.EstimatedDoneAt.IsZero()) {
-		return fmt.Errorf("at least one field must be provided for update")
-	}
-	if target.Priority == enum.PriorityUnknown {
-		return fmt.Errorf("invalid priority value, must be one of: %s",
-			strings.Join([]string{
-				enum.PriorityLow.String(), enum.PriorityMedium.String(), enum.PriorityHigh.String(),
-			}, ", "))
-	}
-	return nil
 }
 
 // setFields updates the existing task with non-empty fields from the target task.

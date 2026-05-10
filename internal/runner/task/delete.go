@@ -22,7 +22,8 @@ func (dr *DeleteRunner) Run(cmd *cobra.Command, args []string) error {
 	if id != "" {
 	}
 	task := &domain.Task{ID: id}
-	err := dr.useCase.Delete(task)
+	ctx := cmd.Context()
+	err := dr.useCase.Delete(ctx, task)
 	if err != nil {
 		return err
 	}

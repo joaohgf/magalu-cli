@@ -18,15 +18,16 @@ func NewFindRunner(
 	return &FindRunner{useCase: useCase, render: render}
 }
 
-func (fr *FindRunner) Run(_ *cobra.Command, args []string) error {
+func (fr *FindRunner) Run(cmd *cobra.Command, args []string) error {
 	task := &domain.Task{}
 	if len(args) > 0 {
 		task.ID = args[0]
 	}
-	found, err := fr.useCase.Find(task)
+	ctx := cmd.Context()
+	found, err := fr.useCase.Find(ctx, task)
 	if err != nil {
 		return err
 	}
-	err = fr.render.Render(found)
+	err = fr.render.Render(ctx, found)
 	return err
 }

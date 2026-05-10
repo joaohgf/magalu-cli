@@ -4,7 +4,8 @@ import (
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	usecase "github.com/joaohgf/magalu-cli/internal/core/usecase/task"
 	"github.com/joaohgf/magalu-cli/internal/persistence"
-	render "github.com/joaohgf/magalu-cli/internal/render/task"
+	"github.com/joaohgf/magalu-cli/internal/render"
+	rendertask "github.com/joaohgf/magalu-cli/internal/render/task"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/task"
 	"github.com/nanobox-io/scribble"
 	"github.com/spf13/cobra"
@@ -21,7 +22,7 @@ const (
 func BuildTaskShowCommandHandler(db *scribble.Driver) *cobra.Command {
 	repository := persistence.NewServiceFinder[*domain.Task](db)
 	rule := usecase.NewFind(repository)
-	renderer := render.NewDetail(nil)
+	renderer := render.NewRender[*domain.Task](rendertask.NewDetailView())
 	runner := handler.NewFindRunner(rule, renderer)
 	cmd := &cobra.Command{
 		Use:   taskShowUse,

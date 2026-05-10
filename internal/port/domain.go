@@ -13,4 +13,12 @@ type FilterDomain[T any] interface {
 	Domain
 	// IsEqual compares the current filter with another filter and returns true if they are considered equal.
 	IsEqual(other T) bool
+	GetPage() int
+	GetSize() int
+	GetTotal() int
+	GetContent() []T
+	SetSize(size int)
+	SetTotal(total int)
+	SetPage(page int)
+	SetContent(content ...T)
 }

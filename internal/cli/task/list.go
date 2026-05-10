@@ -4,7 +4,8 @@ import (
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	usecase "github.com/joaohgf/magalu-cli/internal/core/usecase/task"
 	"github.com/joaohgf/magalu-cli/internal/persistence"
-	render "github.com/joaohgf/magalu-cli/internal/render/task"
+	"github.com/joaohgf/magalu-cli/internal/render"
+	rendertask "github.com/joaohgf/magalu-cli/internal/render/task"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/task"
 	"github.com/nanobox-io/scribble"
 	"github.com/spf13/cobra"
@@ -19,9 +20,10 @@ const (
 
 // BuildTaskListCommandHandler builds the list subcommand runner for the task command.
 func BuildTaskListCommandHandler(db *scribble.Driver) *cobra.Command {
-	repository := persistence.NewServiceFinder[*domain.Task](db)
+	repository := persistence.NewServiceLister[*domain.Task, *domain.TaskFilter](db)
 	rule := usecase.NewList(repository)
-	renderer := render.NewList(nil)
+	view := rendertask.NewList()
+	renderer := render.NewRender[*domain.TaskFilter](view)
 	runner := handler.NewListRunner(rule, renderer)
 	cmd := &cobra.Command{
 		Use:   taskListUse,
@@ -33,5 +35,7 @@ func BuildTaskListCommandHandler(db *scribble.Driver) *cobra.Command {
 	cmd.Flags().StringP("description", "d", "", "Description filter (contains)")
 	cmd.Flags().StringP("status", "s", "", "Status of the task (in_progress, done)")
 	cmd.Flags().StringP("priority", "p", "", "Priority of the task (low, medium, high)")
+	cmd.Flags().StringP("size", "S", "", "Number of tasks to return")
+	cmd.Flags().StringP("page", "P", "", "Page number for pagination")
 	return cmd
 }

@@ -1,6 +1,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
@@ -15,11 +16,11 @@ func NewFind(persistence port.FindUseCase[*domain.Task]) *Find {
 	return &Find{persistence: persistence}
 }
 
-func (f *Find) Find(target *domain.Task) (*domain.Task, error) {
+func (f *Find) Find(ctx context.Context, target *domain.Task) (*domain.Task, error) {
 	if target.ID == "" {
 		return nil, fmt.Errorf("task ID is required")
 	}
-	task, err := f.persistence.Find(target)
+	task, err := f.persistence.Find(ctx, target)
 	if err != nil {
 		return nil, fmt.Errorf("finding task: %w", err)
 	}

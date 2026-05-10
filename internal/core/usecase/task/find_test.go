@@ -3,6 +3,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -11,7 +12,7 @@ import (
 
 func TestFindUseCase(t *testing.T) {
 	t.Run("successfully", findSuccessfully)
-	t.Run("with error", func(t *testing.T) {
+	t.Run("with errors", func(t *testing.T) {
 		t.Run("when task ID is empty", findWithEmptyTaskID)
 		t.Run("when finding task", findWithErrorFindingTask)
 	})
@@ -20,9 +21,9 @@ func TestFindUseCase(t *testing.T) {
 func findSuccessfully(t *testing.T) {
 	find := NewFind(new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1"}
-	foundTask, err := find.Find(task)
+	foundTask, err := find.Find(t.Context(), task)
 	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+		t.Fatalf("expected no errors, got %v", err)
 	}
 	if foundTask == nil {
 		t.Fatal("expected found task, got nil")
@@ -35,18 +36,18 @@ func findSuccessfully(t *testing.T) {
 func findWithEmptyTaskID(t *testing.T) {
 	find := NewFind(new(mockPersistenceFinder))
 	task := &domain.Task{ID: ""}
-	_, err := find.Find(task)
+	_, err := find.Find(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
 func findWithErrorFindingTask(t *testing.T) {
 	find := NewFind(new(mockPersistenceFinderWithError))
 	task := &domain.Task{ID: "1"}
-	_, err := find.Find(task)
+	_, err := find.Find(t.Context(), task)
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
@@ -59,12 +60,12 @@ type (
 	mockPersistenceFinderWithError struct{}
 )
 
-func (m *mockPersistenceFinder) Find(target *domain.Task) (*domain.Task, error) {
+func (m *mockPersistenceFinder) Find(_ context.Context, target *domain.Task) (*domain.Task, error) {
 	return &domain.Task{ID: target.ID}, nil
 }
-func (m *mockPersistenceFinder) FindAll(_ *domain.Task) (*domain.Task, error) {
+func (m *mockPersistenceFinder) FindAll(_ context.Context, _ *domain.Task) (*domain.Task, error) {
 	return nil, nil
 }
-func (m *mockPersistenceFinderWithError) Find(_ *domain.Task) (*domain.Task, error) {
-	return nil, fmt.Errorf("error finding task")
+func (m *mockPersistenceFinderWithError) Find(_ context.Context, _ *domain.Task) (*domain.Task, error) {
+	return nil, fmt.Errorf("errors finding task")
 }

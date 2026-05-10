@@ -3,6 +3,7 @@
 package task
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -12,9 +13,9 @@ import (
 
 func TestUpdateRunner(t *testing.T) {
 	t.Run("run successfully", runUpdateSuccessfully)
-	t.Run("run with error", func(t *testing.T) {
+	t.Run("run with errors", func(t *testing.T) {
 		t.Run("run with valid estimated_done_at", runUpdateErrorParsingEstimatedDoneAt)
-		t.Run("error saving task", runUpdateErrorSavingTask)
+		t.Run("errors saving task", runUpdateErrorSavingTask)
 	})
 }
 
@@ -29,7 +30,7 @@ func runUpdateSuccessfully(t *testing.T) {
 	runner := NewUpdateRunner(useCase)
 	err := runner.Run(cmd, []string{"123"})
 	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+		t.Fatalf("expected no errors, got %v", err)
 	}
 }
 
@@ -44,7 +45,7 @@ func runUpdateErrorParsingEstimatedDoneAt(t *testing.T) {
 	runner := NewUpdateRunner(useCase)
 	err := runner.Run(cmd, []string{"123"})
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
@@ -59,7 +60,7 @@ func runUpdateErrorSavingTask(t *testing.T) {
 	cmd.Flags().String("estimated_done_at", "2024-12-31 15:00:00", "")
 	err := runner.Run(cmd, []string{"123"})
 	if err == nil {
-		t.Fatal("expected error, got nil")
+		t.Fatal("expected errors, got nil")
 	}
 }
 
@@ -79,11 +80,11 @@ type (
 	mockUpdateUseCaseWithError struct{}
 )
 
-func (m *mockUpdateUseCase) Save(task *domain.Task) (*domain.Task, error) {
+func (m *mockUpdateUseCase) Save(_ context.Context, task *domain.Task) (*domain.Task, error) {
 	task.Title = "Updated Task"
 	return task, nil
 }
 
-func (m *mockUpdateUseCaseWithError) Save(task *domain.Task) (*domain.Task, error) {
-	return nil, fmt.Errorf("error saving task")
+func (m *mockUpdateUseCaseWithError) Save(_ context.Context, task *domain.Task) (*domain.Task, error) {
+	return nil, fmt.Errorf("errors saving task")
 }

@@ -20,7 +20,8 @@ func (dr *DoneRunner) Run(cmd *cobra.Command, args []string) error {
 		id = args[0]
 	}
 	task := &domain.Task{ID: id}
-	updated, err := dr.useCase.Save(task)
+	ctx := cmd.Context()
+	updated, err := dr.useCase.Save(ctx, task)
 	if err != nil {
 		return err
 	}
