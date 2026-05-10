@@ -4,4 +4,4 @@ cli
 /vendor
 **.html
 coverage.out
-./data
+./data**
