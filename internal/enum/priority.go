@@ -1,26 +1,20 @@
 package enum
 
 const (
-	PriorityLow     Priority = "LOW"
-	PriorityMedium  Priority = "MEDIUM"
-	PriorityHigh    Priority = "HIGH"
-	PriorityUnknown Priority = "UNKNOWN"
+	PriorityLow     Type = "LOW"
+	PriorityMedium  Type = "MEDIUM"
+	PriorityHigh    Type = "HIGH"
+	PriorityUnknown Type = "UNKNOWN"
 )
 
-type Priority string
-
-func (p Priority) String() string {
-	return string(p)
-}
-
-func PriorityOf(target string) Priority {
-	target = Of(target)
-	switch target {
-	case string(PriorityLow):
+func PriorityOf(target string) Type {
+	parsed := Of(target)
+	switch parsed {
+	case PriorityLow:
 		return PriorityLow
-	case string(PriorityMedium):
+	case PriorityMedium:
 		return PriorityMedium
-	case string(PriorityHigh):
+	case PriorityHigh:
 		return PriorityHigh
 	default:
 		return PriorityUnknown

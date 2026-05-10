@@ -8,10 +8,14 @@ import (
 
 type DoneRunner struct {
 	useCase port.SaveUseCase[*domain.Task]
+	render  port.Render[*domain.Task]
 }
 
-func NewDoneRunner(useCase port.SaveUseCase[*domain.Task]) *DoneRunner {
-	return &DoneRunner{useCase: useCase}
+func NewDoneRunner(
+	useCase port.SaveUseCase[*domain.Task],
+	render port.Render[*domain.Task],
+) *DoneRunner {
+	return &DoneRunner{useCase: useCase, render: render}
 }
 
 func (dr *DoneRunner) Run(cmd *cobra.Command, args []string) error {
@@ -25,6 +29,6 @@ func (dr *DoneRunner) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	cmd.Printf("Task with ID %s marked as done successfully\n", updated.ID)
-	return nil
+	err = dr.render.Render(ctx, updated)
+	return err
 }

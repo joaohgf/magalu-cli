@@ -1,23 +1,17 @@
 package enum
 
 const (
-	StatusInProgress Status = "IN_PROGRESS"
-	StatusDone       Status = "DONE"
-	StatusUnknown    Status = "UNKNOWN"
+	StatusInProgress Type = "IN_PROGRESS"
+	StatusDone       Type = "DONE"
+	StatusUnknown    Type = "UNKNOWN"
 )
 
-type Status string
-
-func (s Status) String() string {
-	return string(s)
-}
-
-func StatusOf(target string) Status {
-	target = Of(target)
-	switch target {
-	case StatusInProgress.String():
+func StatusOf(target string) Type {
+	parsed := Of(target)
+	switch parsed {
+	case StatusInProgress:
 		return StatusInProgress
-	case StatusDone.String():
+	case StatusDone:
 		return StatusDone
 	default:
 		return StatusUnknown

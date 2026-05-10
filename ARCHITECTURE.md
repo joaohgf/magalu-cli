@@ -158,8 +158,6 @@ The use cases depend on interfaces from `internal/port`, not concrete storage/re
 - `PersistenceLister[T, F]`
 - `PersistenceDeleter[T]`
 
-All methods receive `context.Context`.
-
 ### Use case contracts (`internal/port/usecase.go`)
 
 - `SaveUseCase[T]`
@@ -212,7 +210,7 @@ Both implement table/json/yaml outputs.
 
 ## Data Storage Model
 
-Scribble persists collections under `./tarefeiro`. For tasks, files are stored under the `tasks` collection (one JSON file per entity ID).
+Scribble persists collections under `./data`. For tasks, files are stored under the `tasks` collection (one JSON file per entity ID).
 
 ## Testing Strategy (Current)
 

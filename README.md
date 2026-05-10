@@ -57,7 +57,7 @@ tarefeiro --help
 ```bash
 git clone https://github.com/joaohgf/magalu-cli.git
 cd magalu-cli
-go build -o ./tarefeiro ./cmd/tarefeiro
+go build -o ./ ./cmd/tarefeiro
 ./tarefeiro --help
 ```
 

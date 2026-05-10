@@ -12,7 +12,7 @@ const (
 	colorBold   = "\033[1m"
 )
 
-func ColorByPriority(priority Priority) string {
+func ColorByPriority(priority Type) string {
 	switch priority {
 	case PriorityHigh:
 		return colorRed + "high" + colorReset
@@ -25,7 +25,7 @@ func ColorByPriority(priority Priority) string {
 	}
 }
 
-func ColorByStatus(status Status) string {
+func ColorByStatus(status Type) string {
 	switch status {
 	case StatusDone:
 		return colorGreen + "done" + colorReset

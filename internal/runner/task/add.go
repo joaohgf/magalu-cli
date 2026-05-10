@@ -14,10 +14,14 @@ import (
 
 type AddRunner struct {
 	useCase port.SaveUseCase[*domain.Task]
+	render  port.Render[*domain.Task]
 }
 
-func NewAddRunner(useCase port.SaveUseCase[*domain.Task]) *AddRunner {
-	return &AddRunner{useCase: useCase}
+func NewAddRunner(
+	useCase port.SaveUseCase[*domain.Task],
+	render port.Render[*domain.Task],
+) *AddRunner {
+	return &AddRunner{useCase: useCase, render: render}
 }
 
 // Run is the method that executes the logic for adding a new task.
@@ -53,6 +57,6 @@ func (cr *AddRunner) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	cmd.Printf("Task created with ID: %s\n", saved.ID)
-	return nil
+	err = cr.render.Render(ctx, saved)
+	return err
 }

@@ -14,8 +14,9 @@ import (
 func TestAddRunner_Run(t *testing.T) {
 	t.Run("run successfully", runAddSuccessfully)
 	t.Run("run with errors", func(t *testing.T) {
-		t.Run("run with valid estimated_done_at", runAddErrorParsingEstimatedDoneAt)
-		t.Run("errors saving task", runAddErrorSavingTask)
+		t.Run("invalid estimated_done_at", runAddErrorParsingEstimatedDoneAt)
+		t.Run("saving", runAddErrorSavingTask)
+		t.Run("rendering", runAddErrorRender)
 	})
 }
 
@@ -27,7 +28,7 @@ func runAddSuccessfully(t *testing.T) {
 		"work",
 	}, "Tags for the task")
 	cmd.Flags().String("estimated_done_at", "2024-12-31 15:00:00", "")
-	runner := NewAddRunner(new(mockSaveUseCase))
+	runner := NewAddRunner(new(mockSaveUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"Test Task"})
 	if err != nil {
 		t.Fatalf("expected no errors but got: %v", err)
@@ -40,7 +41,7 @@ func runAddErrorParsingEstimatedDoneAt(t *testing.T) {
 	cmd.Flags().String("description", "", "")
 	cmd.Flags().StringSlice("tags", []string{}, "")
 	cmd.Flags().String("estimated_done_at", "invalid-date", "")
-	runner := NewAddRunner(nil)
+	runner := NewAddRunner(new(mockSaveUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"Test Task"})
 	if err == nil {
 		t.Fatal("expected an errors but got nil")
@@ -53,7 +54,20 @@ func runAddErrorSavingTask(t *testing.T) {
 	cmd.Flags().String("description", "", "")
 	cmd.Flags().StringSlice("tags", []string{}, "Tags for the task")
 	cmd.Flags().String("estimated_done_at", "", "")
-	runner := NewAddRunner(new(mockSaveUseCaseWithError))
+	runner := NewAddRunner(new(mockSaveUseCaseWithError), new(mockRender))
+	err := runner.Run(cmd, []string{""})
+	if err == nil {
+		t.Fatal("expected an errors but got nil")
+	}
+}
+
+func runAddErrorRender(t *testing.T) {
+	cmd := getAddCommand()
+	cmd.Flags().String("priority", "", "")
+	cmd.Flags().String("description", "", "")
+	cmd.Flags().StringSlice("tags", []string{}, "Tags for the task")
+	cmd.Flags().String("estimated_done_at", "", "")
+	runner := NewAddRunner(new(mockSaveUseCase), new(mockRenderWithError))
 	err := runner.Run(cmd, []string{""})
 	if err == nil {
 		t.Fatal("expected an errors but got nil")

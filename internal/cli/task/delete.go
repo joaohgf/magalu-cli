@@ -4,6 +4,8 @@ import (
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	usecase "github.com/joaohgf/magalu-cli/internal/core/usecase/task"
 	"github.com/joaohgf/magalu-cli/internal/persistence"
+	"github.com/joaohgf/magalu-cli/internal/render"
+	taskrender "github.com/joaohgf/magalu-cli/internal/render/task"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/task"
 	"github.com/nanobox-io/scribble"
 	"github.com/spf13/cobra"
@@ -19,7 +21,8 @@ const (
 func BuildDeleteCommandHandler(db *scribble.Driver) *cobra.Command {
 	repository := persistence.NewServiceDeleter[*domain.Task](db)
 	rule := usecase.NewDelete(repository)
-	runner := handler.NewDeleteRunner(rule)
+	renderer := render.NewRender[*domain.Task](taskrender.NewDeleteView())
+	runner := handler.NewDeleteRunner(rule, renderer)
 	cmd := &cobra.Command{
 		Use:   taskDeleteUse,
 		Short: taskDeleteShort,

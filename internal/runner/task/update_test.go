@@ -14,8 +14,9 @@ import (
 func TestUpdateRunner(t *testing.T) {
 	t.Run("run successfully", runUpdateSuccessfully)
 	t.Run("run with errors", func(t *testing.T) {
-		t.Run("run with valid estimated_done_at", runUpdateErrorParsingEstimatedDoneAt)
-		t.Run("errors saving task", runUpdateErrorSavingTask)
+		t.Run("invalid estimated_done_at", runUpdateErrorParsingEstimatedDoneAt)
+		t.Run("saving", runUpdateErrorSavingTask)
+		t.Run("rendering", runUpdateErrorRender)
 	})
 }
 
@@ -26,8 +27,7 @@ func runUpdateSuccessfully(t *testing.T) {
 	cmd.Flags().StringSlice("tags", []string{"tag1", "tag2"}, "")
 	cmd.Flags().String("priority", "high", "")
 	cmd.Flags().String("estimated_done_at", "2024-12-31 15:00:00", "")
-	useCase := &mockUpdateUseCase{}
-	runner := NewUpdateRunner(useCase)
+	runner := NewUpdateRunner(new(mockUpdateUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
 	if err != nil {
 		t.Fatalf("expected no errors, got %v", err)
@@ -41,8 +41,7 @@ func runUpdateErrorParsingEstimatedDoneAt(t *testing.T) {
 	cmd.Flags().StringSlice("tags", []string{"tag1", "tag2"}, "")
 	cmd.Flags().String("priority", "high", "")
 	cmd.Flags().String("estimated_done_at", "invalid-date", "")
-	useCase := &mockUpdateUseCase{}
-	runner := NewUpdateRunner(useCase)
+	runner := NewUpdateRunner(new(mockUpdateUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
 	if err == nil {
 		t.Fatal("expected errors, got nil")
@@ -51,8 +50,21 @@ func runUpdateErrorParsingEstimatedDoneAt(t *testing.T) {
 
 func runUpdateErrorSavingTask(t *testing.T) {
 	cmd := getUpdateCommand()
-	useCase := &mockUpdateUseCaseWithError{}
-	runner := NewUpdateRunner(useCase)
+	runner := NewUpdateRunner(new(mockUpdateUseCaseWithError), new(mockRender))
+	cmd.Flags().String("title", "Updated Task", "")
+	cmd.Flags().String("description", "Updated Description", "")
+	cmd.Flags().StringSlice("tags", []string{"tag1", "tag2"}, "")
+	cmd.Flags().String("priority", "high", "")
+	cmd.Flags().String("estimated_done_at", "2024-12-31 15:00:00", "")
+	err := runner.Run(cmd, []string{"123"})
+	if err == nil {
+		t.Fatal("expected errors, got nil")
+	}
+}
+
+func runUpdateErrorRender(t *testing.T) {
+	cmd := getUpdateCommand()
+	runner := NewUpdateRunner(new(mockUpdateUseCase), new(mockRenderWithError))
 	cmd.Flags().String("title", "Updated Task", "")
 	cmd.Flags().String("description", "Updated Description", "")
 	cmd.Flags().StringSlice("tags", []string{"tag1", "tag2"}, "")

@@ -8,18 +8,18 @@ import (
 )
 
 type Task struct {
-	ID              string        `json:"id,omitempty" yaml:"id"`
-	Title           string        `json:"title,omitempty" yaml:"title"`
-	Description     string        `json:"description,omitempty" yaml:"description"`
-	Status          enum.Status   `json:"status,omitempty" yaml:"status"`
-	Priority        enum.Priority `json:"priority,omitempty" yaml:"priority"`
-	CreatedAt       time.Time     `json:"created_at,omitempty" yaml:"created_at"`
-	DoneAt          *time.Time    `json:"done_at,omitempty" yaml:"done_at"`
-	EstimatedDoneAt *time.Time    `json:"estimated_done_at,omitempty" yaml:"estimated_done_at"`
-	Tags            []string      `json:"tags,omitempty" yaml:"tags"`
+	ID              string     `json:"id,omitempty" yaml:"id"`
+	Title           string     `json:"title,omitempty" yaml:"title"`
+	Description     string     `json:"description,omitempty" yaml:"description"`
+	Status          enum.Type  `json:"status,omitempty" yaml:"status"`
+	Priority        enum.Type  `json:"priority,omitempty" yaml:"priority"`
+	CreatedAt       time.Time  `json:"created_at,omitempty" yaml:"created_at"`
+	DoneAt          *time.Time `json:"done_at,omitempty" yaml:"done_at"`
+	EstimatedDoneAt *time.Time `json:"estimated_done_at,omitempty" yaml:"estimated_done_at"`
+	Tags            []string   `json:"tags,omitempty" yaml:"tags"`
 }
 
-func NewTask(id, title, description string, priority enum.Priority, createdAt time.Time, tags ...string) *Task {
+func NewTask(id, title, description string, priority enum.Type, createdAt time.Time, tags ...string) *Task {
 	return &Task{
 		ID:          id,
 		Title:       title,
@@ -32,6 +32,9 @@ func NewTask(id, title, description string, priority enum.Priority, createdAt ti
 }
 
 func (t *Task) GetID() string {
+	if t == nil {
+		return ""
+	}
 	return t.ID
 }
 
@@ -40,20 +43,16 @@ func (t *Task) GetCollection() string {
 }
 
 func (t *Task) MarkAsDone() {
+	if t == nil {
+		return
+	}
 	t.Status = enum.StatusDone
 	t.DoneAt = new(time.Now())
 }
 
-func (t *Task) IsOverdue() bool {
-	if t.EstimatedDoneAt == nil {
-		return false
-	}
-	condition := time.Now().After(*t.EstimatedDoneAt) && t.Status != enum.StatusDone
-	return condition
-}
-
 func (t *Task) IsEmpty() bool {
-	return t == nil || (t.ID == "" && t.Title == "" && t.Description == "" && t.CreatedAt.IsZero() && t.Priority == "" && t.Status == "")
+	return t == nil || (t.ID == "" && t.Title == "" && t.Description == "" &&
+		t.CreatedAt.IsZero() && t.Priority == "" && t.Status == "")
 }
 
 func (t *Task) Matches(other *Task) bool {
@@ -79,6 +78,9 @@ func (t *Task) Matches(other *Task) bool {
 }
 
 func (t *Task) HasAnyUpdate() bool {
+	if t == nil {
+		return false
+	}
 	return t.Title != "" ||
 		t.Description != "" ||
 		(t.Priority != "" && t.Priority != enum.PriorityUnknown) ||

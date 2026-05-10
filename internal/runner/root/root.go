@@ -16,8 +16,8 @@ func NewRunner() *Runner {
 }
 
 // Run executes the root command, which displays the help message for the CLI application.
-func (r *Runner) Run(cmd *cobra.Command, _ []string) error {
-	err := cmd.Help()
+func (r *Runner) Run(cmd *cobra.Command, _ []string) (err error) {
+	err = cmd.Help()
 	if err != nil {
 		return fmt.Errorf("failed to display help: %w", err)
 	}
@@ -27,7 +27,7 @@ func (r *Runner) Run(cmd *cobra.Command, _ []string) error {
 // PreRun is a hook that runs before every command execution
 // It checks for the presence of the output flag and updates the command's context accordingly.
 func (r *Runner) PreRun(cmd *cobra.Command, _ []string) error {
-	output := cmd.Flag(enum.OutputDefaultKey.String()).Value.String()
+	output := cmd.Flag(enum.OutputDefaultKey.ToLower()).Value.String()
 	ctx := cmd.Context()
 	if output != "" {
 		ctx = context.WithValue(ctx, enum.OutputDefaultKey.String(), enum.OutputOf(output))

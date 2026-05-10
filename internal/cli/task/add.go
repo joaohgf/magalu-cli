@@ -1,12 +1,14 @@
 package task
 
 import (
-	"log"
-	"os"
+	"fmt"
+	"log/slog"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	usecase "github.com/joaohgf/magalu-cli/internal/core/usecase/task"
 	"github.com/joaohgf/magalu-cli/internal/persistence"
+	"github.com/joaohgf/magalu-cli/internal/render"
+	taskrender "github.com/joaohgf/magalu-cli/internal/render/task"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/task"
 	"github.com/nanobox-io/scribble"
 	"github.com/spf13/cobra"
@@ -23,7 +25,8 @@ const (
 func BuildTaskAddCommandHandler(db *scribble.Driver) *cobra.Command {
 	repository := persistence.NewServiceSaver[*domain.Task](db)
 	rule := usecase.NewAdd(repository)
-	runner := handler.NewAddRunner(rule)
+	renderer := render.NewRender[*domain.Task](taskrender.NewAddView())
+	runner := handler.NewAddRunner(rule, renderer)
 	cmd := &cobra.Command{
 		Use:   taskAddUse,
 		Short: taskAddShortDescription,
@@ -35,10 +38,8 @@ func BuildTaskAddCommandHandler(db *scribble.Driver) *cobra.Command {
 	cmd.Flags().StringP("priority", "p", "medium", "Priority of the task (low, medium, high)")
 	cmd.Flags().StringSliceP("tags", "T", []string{}, "Comma-separated list of tags for the task")
 	cmd.Flags().StringP("estimated_done_at", "e", "", "Estimated done date for the task (YYYY-MM-DD HH:MM:SS format)")
-	logger := log.Default()
-	logger.SetOutput(os.Stdout)
 	if err := cmd.MarkFlagRequired("priority"); err != nil {
-		logger.Printf("failed to mark flag as required: %v", err)
+		slog.Error(fmt.Sprintf("error marking priority flag as required: %v", err))
 		return nil
 	}
 	return cmd

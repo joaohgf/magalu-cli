@@ -8,7 +8,7 @@ build: ## Build the project binary
 	@go mod tidy
 	@go mod download
 	@go mod vendor
-	@go build -o ./tarefeiro ./cmd/tarefeiro
+	@go build -o ./ ./cmd/tarefeiro
 
 test: ## Run unit tests
 	@echo "Running tests..."

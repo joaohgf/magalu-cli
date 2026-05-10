@@ -4,6 +4,8 @@ import (
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	usecase "github.com/joaohgf/magalu-cli/internal/core/usecase/task"
 	"github.com/joaohgf/magalu-cli/internal/persistence"
+	"github.com/joaohgf/magalu-cli/internal/render"
+	taskrender "github.com/joaohgf/magalu-cli/internal/render/task"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/task"
 	"github.com/nanobox-io/scribble"
 	"github.com/spf13/cobra"
@@ -20,7 +22,8 @@ func BuildUpdateCommandHandler(db *scribble.Driver) *cobra.Command {
 	saver := persistence.NewServiceSaver[*domain.Task](db)
 	finder := persistence.NewServiceFinder[*domain.Task](db)
 	rule := usecase.NewUpdate(saver, finder)
-	runner := handler.NewUpdateRunner(rule)
+	renderer := render.NewRender[*domain.Task](taskrender.NewUpdateView())
+	runner := handler.NewUpdateRunner(rule, renderer)
 	cmd := &cobra.Command{
 		Use:   taskUpdateUse,
 		Short: taskUpdateShort,

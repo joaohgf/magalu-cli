@@ -16,7 +16,7 @@ func NewRender[T any](view port.View[T]) *Render[T] {
 }
 
 func (r *Render[T]) Render(ctx context.Context, data T) error {
-	output, ok := ctx.Value(enum.OutputDefaultKey).(enum.Output)
+	output, ok := ctx.Value(enum.OutputDefaultKey.String()).(enum.Type)
 	if !ok {
 		output = enum.OutputTable
 	}

@@ -13,12 +13,15 @@ import (
 
 func TestDeleteRunner(t *testing.T) {
 	t.Run("run successfully", runDeleteSuccessfully)
-	t.Run("run with errors", runDeleteWithError)
+	t.Run("run with errors", func(t *testing.T) {
+		t.Run("deleting", runDeleteWithError)
+		t.Run("rendering", runDeleteRenderWithError)
+	})
 }
 
 func runDeleteSuccessfully(t *testing.T) {
 	cmd := getDeleteCommand()
-	runner := NewDeleteRunner(new(mockDeleteUseCase))
+	runner := NewDeleteRunner(new(mockDeleteUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
 	if err != nil {
 		t.Fatalf("expected no errors but got: %v", err)
@@ -27,7 +30,16 @@ func runDeleteSuccessfully(t *testing.T) {
 
 func runDeleteWithError(t *testing.T) {
 	cmd := getDeleteCommand()
-	runner := NewDeleteRunner(new(mockDeleteUseCaseWithError))
+	runner := NewDeleteRunner(new(mockDeleteUseCaseWithError), new(mockRender))
+	err := runner.Run(cmd, []string{"123"})
+	if err == nil {
+		t.Fatal("expected an errors but got nil")
+	}
+}
+
+func runDeleteRenderWithError(t *testing.T) {
+	cmd := getDeleteCommand()
+	runner := NewDeleteRunner(new(mockDeleteUseCase), new(mockRenderWithError))
 	err := runner.Run(cmd, []string{"123"})
 	if err == nil {
 		t.Fatal("expected an errors but got nil")

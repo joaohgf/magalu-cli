@@ -2,13 +2,13 @@ package task
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/joaohgf/magalu-cli/internal/errors"
 	"github.com/olekukonko/tablewriter"
 	"github.com/olekukonko/tablewriter/tw"
 	"gopkg.in/yaml.v3"
@@ -54,11 +54,11 @@ func (d *DetailView) Table(task *domain.Task) error {
 	row = append(row, doneAt)
 	err = d.table.Append(row)
 	if err != nil {
-		return fmt.Errorf("failed to append task to table: %w", err)
+		return errors.Invalid("failed to append task to table")
 	}
 	err = d.table.Render()
 	if err != nil {
-		return fmt.Errorf("failed to render table: %w", err)
+		return errors.Invalid("failed to render table")
 	}
 	return nil
 }
@@ -68,7 +68,7 @@ func (d *DetailView) JSON(task *domain.Task) error {
 	encoder.SetIndent("", "  ")
 	err := encoder.Encode(task)
 	if err != nil {
-		return fmt.Errorf("failed to encode tasks to JSON: %w", err)
+		return errors.Invalid("failed to encode tasks to JSON")
 	}
 	return nil
 }
@@ -77,7 +77,7 @@ func (d *DetailView) YAML(task *domain.Task) error {
 	encoder := yaml.NewEncoder(os.Stdout)
 	err := encoder.Encode(task)
 	if err != nil {
-		return fmt.Errorf("failed to encode tasks to YAML: %w", err)
+		return errors.Invalid("failed to encode tasks to YAML")
 	}
 	return nil
 }

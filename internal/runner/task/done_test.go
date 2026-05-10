@@ -10,12 +10,15 @@ import (
 
 func TestDoneRunner(t *testing.T) {
 	t.Run("run successfully", runDoneSuccessfully)
-	t.Run("run with errors", runDoneWithError)
+	t.Run("run with errors", func(t *testing.T) {
+		t.Run("when saving task", runDoneWithError)
+		t.Run("when rendering task", runDoneRenderWithError)
+	})
 }
 
 func runDoneSuccessfully(t *testing.T) {
 	cmd := getCompleteCommand()
-	runner := NewDoneRunner(new(mockSaveUseCase))
+	runner := NewDoneRunner(new(mockSaveUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
 	if err != nil {
 		t.Fatalf("expected no errors but got: %v", err)
@@ -24,7 +27,16 @@ func runDoneSuccessfully(t *testing.T) {
 
 func runDoneWithError(t *testing.T) {
 	cmd := getCompleteCommand()
-	runner := NewDoneRunner(new(mockSaveUseCaseWithError))
+	runner := NewDoneRunner(new(mockSaveUseCaseWithError), new(mockRender))
+	err := runner.Run(cmd, []string{"123"})
+	if err == nil {
+		t.Fatal("expected an errors but got nil")
+	}
+}
+
+func runDoneRenderWithError(t *testing.T) {
+	cmd := getCompleteCommand()
+	runner := NewDoneRunner(new(mockSaveUseCase), new(mockRenderWithError))
 	err := runner.Run(cmd, []string{"123"})
 	if err == nil {
 		t.Fatal("expected an errors but got nil")

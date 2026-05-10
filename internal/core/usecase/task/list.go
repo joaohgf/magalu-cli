@@ -20,20 +20,16 @@ func NewList(persistence port.PersistenceLister[*domain.Task, *domain.TaskFilter
 
 // All takes a target task as input, which serves as a filter for the search criteria.
 func (l *List) All(ctx context.Context, target *domain.TaskFilter) (*domain.TaskFilter, error) {
-	err := l.validate(target)
-	if err != nil {
-		return nil, err
-	}
+	l.setDefault(target)
 	found, err := l.persistence.List(ctx, target)
 	return found, err
 }
 
-func (l *List) validate(target *domain.TaskFilter) error {
+func (l *List) setDefault(target *domain.TaskFilter) {
 	if target.GetSize() <= 0 {
 		target.SetSize(enum.DefaultSize)
 	}
 	if target.GetPage() <= 0 {
 		target.SetPage(enum.DefaultPage)
 	}
-	return nil
 }

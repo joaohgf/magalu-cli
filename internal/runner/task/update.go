@@ -12,10 +12,14 @@ import (
 
 type UpdateRunner struct {
 	useCase port.SaveUseCase[*domain.Task]
+	render  port.Render[*domain.Task]
 }
 
-func NewUpdateRunner(useCase port.SaveUseCase[*domain.Task]) *UpdateRunner {
-	return &UpdateRunner{useCase: useCase}
+func NewUpdateRunner(
+	useCase port.SaveUseCase[*domain.Task],
+	render port.Render[*domain.Task],
+) *UpdateRunner {
+	return &UpdateRunner{useCase: useCase, render: render}
 }
 
 func (ur *UpdateRunner) Run(cmd *cobra.Command, args []string) error {
@@ -45,6 +49,6 @@ func (ur *UpdateRunner) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	cmd.Printf("Task with ID %s updated successfully\n", updated.ID)
-	return nil
+	err = ur.render.Render(ctx, updated)
+	return err
 }

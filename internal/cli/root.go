@@ -45,7 +45,7 @@ func buildRootCommandHandler() *cobra.Command {
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute(ctx context.Context) {
-	db, err := scribble.New("./tarefeiro", nil)
+	db, err := scribble.New("./data/", nil)
 	if err != nil {
 		slog.Log(ctx, slog.LevelError, "failed to initialize database", "errors", err)
 		return

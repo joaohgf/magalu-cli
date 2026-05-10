@@ -8,10 +8,14 @@ import (
 
 type DeleteRunner struct {
 	useCase port.DeleteUseCase[*domain.Task]
+	render  port.Render[*domain.Task]
 }
 
-func NewDeleteRunner(useCase port.DeleteUseCase[*domain.Task]) *DeleteRunner {
-	return &DeleteRunner{useCase: useCase}
+func NewDeleteRunner(
+	useCase port.DeleteUseCase[*domain.Task],
+	render port.Render[*domain.Task],
+) *DeleteRunner {
+	return &DeleteRunner{useCase: useCase, render: render}
 }
 
 func (dr *DeleteRunner) Run(cmd *cobra.Command, args []string) error {
@@ -27,6 +31,6 @@ func (dr *DeleteRunner) Run(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	cmd.Printf("Task with ID %s deleted successfully\n", id)
-	return nil
+	err = dr.render.Render(ctx, task)
+	return err
 }
