@@ -6,32 +6,31 @@ const (
 	colorRed    = "\033[31m"
 	colorGreen  = "\033[32m"
 	colorYellow = "\033[33m"
-	colorBlue   = "\033[34m"
-	colorCyan   = "\033[36m"
 	colorGray   = "\033[90m"
-	colorBold   = "\033[1m"
 )
 
+// ColorByPriority returns a colored string representation of the task priority based on the provided priority type.
 func ColorByPriority(priority Type) string {
 	switch priority {
 	case PriorityHigh:
-		return colorRed + "high" + colorReset
+		return colorRed + priority.String() + colorReset
 	case PriorityMedium:
-		return colorYellow + "medium" + colorReset
+		return colorYellow + priority.String() + colorReset
 	case PriorityLow:
-		return colorGreen + "low" + colorReset
+		return colorGreen + priority.String() + colorReset
 	default:
-		return colorGray + "?" + colorReset
+		return colorGray + priority.String() + colorReset
 	}
 }
 
+// ColorByStatus returns a colored string representation of the task status based on the provided status type.
 func ColorByStatus(status Type) string {
 	switch status {
 	case StatusDone:
-		return colorGreen + "done" + colorReset
+		return colorGreen + status.String() + colorReset
 	case StatusInProgress:
-		return colorYellow + "in_progress" + colorReset
+		return colorYellow + status.String() + colorReset
 	default:
-		return colorGray + "?" + colorReset
+		return colorGray + status.String() + colorReset
 	}
 }

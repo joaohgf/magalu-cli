@@ -9,6 +9,7 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUpdateRunner(t *testing.T) {
@@ -29,9 +30,7 @@ func runUpdateSuccessfully(t *testing.T) {
 	cmd.Flags().String("estimated_done_at", "2024-12-31 15:00:00", "")
 	runner := NewUpdateRunner(new(mockUpdateUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
-	if err != nil {
-		t.Fatalf("expected no errors, got %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func runUpdateErrorParsingEstimatedDoneAt(t *testing.T) {
@@ -43,9 +42,7 @@ func runUpdateErrorParsingEstimatedDoneAt(t *testing.T) {
 	cmd.Flags().String("estimated_done_at", "invalid-date", "")
 	runner := NewUpdateRunner(new(mockUpdateUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func runUpdateErrorSavingTask(t *testing.T) {
@@ -57,9 +54,7 @@ func runUpdateErrorSavingTask(t *testing.T) {
 	cmd.Flags().String("priority", "high", "")
 	cmd.Flags().String("estimated_done_at", "2024-12-31 15:00:00", "")
 	err := runner.Run(cmd, []string{"123"})
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func runUpdateErrorRender(t *testing.T) {
@@ -71,9 +66,7 @@ func runUpdateErrorRender(t *testing.T) {
 	cmd.Flags().String("priority", "high", "")
 	cmd.Flags().String("estimated_done_at", "2024-12-31 15:00:00", "")
 	err := runner.Run(cmd, []string{"123"})
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

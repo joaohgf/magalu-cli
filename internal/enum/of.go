@@ -5,10 +5,12 @@ import "strings"
 // Type is a generic type that can be used to represent any string-based enumeration.
 type Type string
 
+// String returns the string representation of the Type.
 func (t Type) String() string {
 	return string(t)
 }
 
+// ToLower returns the lowercase string representation of the Type.
 func (t Type) ToLower() string {
 	return strings.ToLower(t.String())
 }

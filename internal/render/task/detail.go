@@ -9,26 +9,23 @@ import (
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/enum"
 	"github.com/joaohgf/magalu-cli/internal/errors"
-	"github.com/olekukonko/tablewriter"
-	"github.com/olekukonko/tablewriter/tw"
+	"github.com/joaohgf/magalu-cli/internal/port"
 	"gopkg.in/yaml.v3"
 )
 
+// DetailView is responsible for rendering the details of a task in a tabular format,
+// as well as providing options to render the task in JSON and YAML formats.
 type DetailView struct {
-	table *tablewriter.Table
+	table port.TableWriter
 }
 
-func NewDetailView() *DetailView {
-	detail := &DetailView{
-		table: tablewriter.NewTable(
-			os.Stdout,
-			tablewriter.WithHeaderAlignment(tw.AlignLeft),
-			tablewriter.WithRowAutoWrap(tw.WrapNormal),
-		),
+func NewDetailView(t port.TableWriter) *DetailView {
+	return &DetailView{
+		table: t,
 	}
-	return detail
 }
 
+// Table is responsible for rendering the details of a task in a tabular format.
 func (d *DetailView) Table(task *domain.Task) error {
 	defer d.table.Close()
 	d.table.Header([]string{"ID", "Title", "Priority", "Status", "Tags", "Created At", "Estimated Done At", "Description", "Done At"})
@@ -63,6 +60,7 @@ func (d *DetailView) Table(task *domain.Task) error {
 	return nil
 }
 
+// JSON is responsible for rendering the details of a task in JSON format.
 func (d *DetailView) JSON(task *domain.Task) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
@@ -73,6 +71,7 @@ func (d *DetailView) JSON(task *domain.Task) error {
 	return nil
 }
 
+// YAML is responsible for rendering the details of a task in YAML format.
 func (d *DetailView) YAML(task *domain.Task) error {
 	encoder := yaml.NewEncoder(os.Stdout)
 	err := encoder.Encode(task)

@@ -1,5 +1,6 @@
 package enum
 
+// Type represents the output format for rendering data.
 const (
 	OutputDefaultKey Type = "OUTPUT"
 	OutputJSON       Type = "JSON"
@@ -8,6 +9,7 @@ const (
 	OutputUnknown    Type = "UNKNOWN"
 )
 
+// OutputOf takes a string input and returns the corresponding Type for output format.
 func OutputOf(target string) Type {
 	parsed := Of(target)
 	switch parsed {

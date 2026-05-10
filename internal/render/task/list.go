@@ -7,26 +7,22 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/enum"
-	"github.com/olekukonko/tablewriter"
-	"github.com/olekukonko/tablewriter/tw"
+	"github.com/joaohgf/magalu-cli/internal/port"
 	"gopkg.in/yaml.v3"
 )
 
+// List is responsible for rendering a list of tasks in a tabular format,
+// as well as providing options to render the tasks in JSON and YAML formats.
 type List struct {
-	table *tablewriter.Table
+	table port.TableWriter
 }
 
-func NewList() *List {
-	list := &List{
-		table: tablewriter.NewTable(
-			os.Stdout,
-			tablewriter.WithHeaderAlignment(tw.AlignLeft),
-			tablewriter.WithRowAutoWrap(tw.WrapNormal),
-		),
-	}
+func NewList(table port.TableWriter) *List {
+	list := &List{table: table}
 	return list
 }
 
+// Table is responsible for rendering a list of tasks in a tabular format.
 func (l *List) Table(filter *domain.TaskFilter) error {
 	defer l.table.Close()
 	if len(filter.Data) == 0 {
@@ -61,6 +57,7 @@ func (l *List) Table(filter *domain.TaskFilter) error {
 	return nil
 }
 
+// JSON is responsible for rendering a list of tasks in JSON format.
 func (l *List) JSON(filter *domain.TaskFilter) error {
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", "  ")
@@ -71,6 +68,7 @@ func (l *List) JSON(filter *domain.TaskFilter) error {
 	return nil
 }
 
+// YAML is responsible for rendering a list of tasks in YAML format.
 func (l *List) YAML(filter *domain.TaskFilter) error {
 	encoder := yaml.NewEncoder(os.Stdout)
 	defer encoder.Close()

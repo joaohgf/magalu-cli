@@ -12,6 +12,7 @@ import (
 	"github.com/nanobox-io/scribble"
 )
 
+// ServiceLister is responsible for listing domain entities from the persistence layer using the scribble driver.
 type ServiceLister[D port.Domain, T port.FilterDomain[D]] struct {
 	*scribble.Driver
 }
@@ -61,6 +62,7 @@ func (s *ServiceLister[D, T]) readAll(target T) ([]D, error) {
 	return out, nil
 }
 
+// paginate takes a slice of items and a target filter, and returns a paginated slice of items based on the pagination parameters defined in the target.
 func (s *ServiceLister[D, T]) paginate(items []D, target T) []D {
 	// limit starts with the length of the filtered items, but it will be adjusted to fit the pagination limits
 	limit := len(items)

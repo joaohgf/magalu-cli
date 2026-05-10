@@ -13,6 +13,7 @@ type FilterDomain[T any] interface {
 	Domain
 	// IsEqual compares the current filter with another filter and returns true if they are considered equal.
 	IsEqual(other T) bool
+	// GetPage Setters and Getters for pagination and content management
 	GetPage() int
 	GetSize() int
 	GetTotal() int

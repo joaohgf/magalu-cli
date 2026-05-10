@@ -7,6 +7,7 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUpdateUseCase(t *testing.T) {
@@ -25,69 +26,48 @@ func updateSuccessfully(t *testing.T) {
 	update := NewUpdate(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1", Title: "Test Task"}
 	updatedTask, err := update.Save(t.Context(), task)
-	if err != nil {
-		t.Fatalf("expected no errors, got %v", err)
-	}
-	if updatedTask == nil {
-		t.Fatal("expected updated task, got nil")
-	}
-	if updatedTask.ID != task.ID {
-		t.Fatal("expected task ID to remain unchanged")
-	}
-	if updatedTask.Title != task.Title {
-		t.Fatal("expected task title to be updated")
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, task.ID, updatedTask.ID)
+	assert.Equal(t, task.Title, updatedTask.Title)
 }
 
 func updateWithNilTask(t *testing.T) {
 	update := NewUpdate(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	_, err := update.Save(t.Context(), nil)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func updateWithoutID(t *testing.T) {
 	update := NewUpdate(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	task := &domain.Task{Title: "Test Task"}
 	_, err := update.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func updateNotFound(t *testing.T) {
 	update := NewUpdate(new(mockPersistenceSaver), new(mockPersistenceFinderWithError))
 	task := &domain.Task{ID: "1", Title: "Test Task"}
 	_, err := update.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func updateWithInvalidPriority(t *testing.T) {
 	update := NewUpdate(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1", Priority: enum.PriorityUnknown}
 	_, err := update.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func updateWithoutAnyField(t *testing.T) {
 	update := NewUpdate(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1"}
 	_, err := update.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func updateErrorSaving(t *testing.T) {
 	update := NewUpdate(new(mockPersistenceSaverWithError), new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1", Title: "Test Task"}
 	_, err := update.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }

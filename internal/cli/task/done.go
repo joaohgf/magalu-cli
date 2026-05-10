@@ -8,6 +8,7 @@ import (
 	taskrender "github.com/joaohgf/magalu-cli/internal/render/task"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/task"
 	"github.com/nanobox-io/scribble"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -19,11 +20,12 @@ const (
 )
 
 // BuildTaskDoneCommandHandler builds the done subcommand runner for the task command.
-func BuildTaskDoneCommandHandler(db *scribble.Driver) *cobra.Command {
+func BuildTaskDoneCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) *cobra.Command {
 	finder := persistence.NewServiceFinder[*domain.Task](db)
 	saver := persistence.NewServiceSaver[*domain.Task](db)
 	rule := usecase.NewDone(saver, finder)
-	renderer := render.NewRender[*domain.Task](taskrender.NewDoneView())
+	view := taskrender.NewDoneView(tableWriter)
+	renderer := render.NewRender[*domain.Task](view)
 	runner := handler.NewDoneRunner(rule, renderer)
 	cmd := &cobra.Command{
 		Use:   taskDoneUse,

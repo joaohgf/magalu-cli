@@ -9,6 +9,7 @@ import (
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/errors"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestListRunner(t *testing.T) {
@@ -23,27 +24,21 @@ func runListSuccessfully(t *testing.T) {
 	cmd := getListCommand()
 	runner := NewListRunner(new(mockFindAllUseCase), new(mockFilterRender))
 	err := runner.Run(cmd, []string{})
-	if err != nil {
-		t.Fatalf("expected no errors but got: %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func runListWithSavingError(t *testing.T) {
 	cmd := getListCommand()
 	runner := NewListRunner(new(mockFindAllUseCaseWithError), new(mockFilterRender))
 	err := runner.Run(cmd, []string{})
-	if err == nil {
-		t.Fatal("expected an errors but got nil")
-	}
+	assert.Error(t, err)
 }
 
 func runListWithRenderingError(t *testing.T) {
 	cmd := getListCommand()
 	runner := NewListRunner(new(mockFindAllUseCase), new(mockFilterRenderWithError))
 	err := runner.Run(cmd, []string{})
-	if err == nil {
-		t.Fatal("expected an errors but got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

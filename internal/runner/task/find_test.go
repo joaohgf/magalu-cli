@@ -9,6 +9,7 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFindRunner(t *testing.T) {
@@ -23,27 +24,21 @@ func runFindSuccessfully(t *testing.T) {
 	cmd := getFindCommand()
 	runner := NewFindRunner(new(mockFindUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
-	if err != nil {
-		t.Fatalf("expected no errors, got %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func runFindWithError(t *testing.T) {
 	cmd := getFindCommand()
 	runner := NewFindRunner(new(mockFindUseCaseWithError), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func runRenderWithError(t *testing.T) {
 	cmd := getFindCommand()
 	runner := NewFindRunner(new(mockFindUseCase), new(mockRenderWithError))
 	err := runner.Run(cmd, []string{"123"})
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

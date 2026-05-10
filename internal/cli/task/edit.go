@@ -8,6 +8,7 @@ import (
 	taskrender "github.com/joaohgf/magalu-cli/internal/render/task"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/task"
 	"github.com/nanobox-io/scribble"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -18,11 +19,12 @@ const (
 )
 
 // BuildUpdateCommandHandler builds the update subcommand runner for the task command.
-func BuildUpdateCommandHandler(db *scribble.Driver) *cobra.Command {
+func BuildUpdateCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) *cobra.Command {
 	saver := persistence.NewServiceSaver[*domain.Task](db)
 	finder := persistence.NewServiceFinder[*domain.Task](db)
 	rule := usecase.NewUpdate(saver, finder)
-	renderer := render.NewRender[*domain.Task](taskrender.NewUpdateView())
+	view := taskrender.NewUpdateView(tableWriter)
+	renderer := render.NewRender[*domain.Task](view)
 	runner := handler.NewUpdateRunner(rule, renderer)
 	cmd := &cobra.Command{
 		Use:   taskUpdateUse,

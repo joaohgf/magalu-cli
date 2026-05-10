@@ -7,6 +7,7 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDoneUseCase(t *testing.T) {
@@ -23,51 +24,35 @@ func doneSuccessfully(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1"}
 	updatedTask, err := done.Save(t.Context(), task)
-	if err != nil {
-		t.Fatalf("expected no errors, got %v", err)
-	}
-	if updatedTask == nil {
-		t.Fatal("expected updated task, got nil")
-	}
-	if updatedTask.Status != enum.StatusDone {
-		t.Fatal("expected task to be marked as done")
-	}
-	if updatedTask.DoneAt == nil || updatedTask.DoneAt.IsZero() {
-		t.Fatal("expected DoneAt to be set")
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, task.ID, updatedTask.ID)
+	assert.Equal(t, enum.StatusDone, updatedTask.Status)
+	assert.NotNil(t, updatedTask.DoneAt)
 }
 
 func doneWithNilTask(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	_, err := done.Save(t.Context(), nil)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func doneWithEmptyTaskID(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaver), new(mockPersistenceFinder))
 	task := &domain.Task{ID: ""}
 	_, err := done.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func doneWithErrorFindingTask(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaver), new(mockPersistenceFinderWithError))
 	task := &domain.Task{ID: "1"}
 	_, err := done.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func doneWithErrorSavingTask(t *testing.T) {
 	done := NewDone(new(mockPersistenceSaverWithError), new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1"}
 	_, err := done.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDoneRunner(t *testing.T) {
@@ -20,27 +21,21 @@ func runDoneSuccessfully(t *testing.T) {
 	cmd := getCompleteCommand()
 	runner := NewDoneRunner(new(mockSaveUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
-	if err != nil {
-		t.Fatalf("expected no errors but got: %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func runDoneWithError(t *testing.T) {
 	cmd := getCompleteCommand()
 	runner := NewDoneRunner(new(mockSaveUseCaseWithError), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
-	if err == nil {
-		t.Fatal("expected an errors but got nil")
-	}
+	assert.Error(t, err)
 }
 
 func runDoneRenderWithError(t *testing.T) {
 	cmd := getCompleteCommand()
 	runner := NewDoneRunner(new(mockSaveUseCase), new(mockRenderWithError))
 	err := runner.Run(cmd, []string{"123"})
-	if err == nil {
-		t.Fatal("expected an errors but got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

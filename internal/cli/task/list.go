@@ -8,6 +8,7 @@ import (
 	rendertask "github.com/joaohgf/magalu-cli/internal/render/task"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/task"
 	"github.com/nanobox-io/scribble"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -19,10 +20,10 @@ const (
 )
 
 // BuildTaskListCommandHandler builds the list subcommand runner for the task command.
-func BuildTaskListCommandHandler(db *scribble.Driver) *cobra.Command {
+func BuildTaskListCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) *cobra.Command {
 	repository := persistence.NewServiceLister[*domain.Task, *domain.TaskFilter](db)
 	rule := usecase.NewList(repository)
-	view := rendertask.NewList()
+	view := rendertask.NewList(tableWriter)
 	renderer := render.NewRender[*domain.TaskFilter](view)
 	runner := handler.NewListRunner(rule, renderer)
 	cmd := &cobra.Command{

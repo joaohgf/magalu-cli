@@ -10,6 +10,7 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddUseCase(t *testing.T) {
@@ -28,64 +29,40 @@ func addSuccessfully(t *testing.T) {
 	add := NewAdd(&mockPersistenceSaver{})
 	task := domain.NewTask("1", "Test Task", "Description", enum.PriorityHigh, time.Now(), "tag1", "tag2")
 	saved, err := add.Save(t.Context(), task)
-	if err != nil {
-		t.Fatalf("expected no errors, got %v", err)
-	}
-	if saved.ID != task.ID {
-		t.Errorf("expected ID %s, got %s", task.ID, saved.ID)
-	}
-	if saved.Title != task.Title {
-		t.Errorf("expected Title %s, got %s", task.Title, saved.Title)
-	}
-	if saved.Description != task.Description {
-		t.Errorf("expected Description %s, got %s", task.Description, saved.Description)
-	}
-	if saved.Priority != task.Priority {
-		t.Errorf("expected Priority %s, got %s", task.Priority.String(), saved.Priority.String())
-	}
-	if saved.Status != task.Status {
-		t.Errorf("expected Status %s, got %s", task.Status.String(), saved.Status.String())
-	}
-	for i, tag := range task.Tags {
-		if saved.Tags[i] != tag {
-			t.Errorf("expected Tag %s, got %s", tag, saved.Tags[i])
-		}
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, task.ID, saved.ID)
+	assert.Equal(t, task.Title, saved.Title)
+	assert.Equal(t, task.Description, saved.Description)
+	assert.Equal(t, task.Priority, saved.Priority)
+	assert.Equal(t, task.Status, saved.Status)
+	assert.Equal(t, task.Tags, saved.Tags)
 }
 
 func addWithNilTask(t *testing.T) {
 	add := NewAdd(new(mockPersistenceSaver))
 	_, err := add.Save(t.Context(), nil)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func addWithEmptyID(t *testing.T) {
 	add := NewAdd(new(mockPersistenceSaver))
 	task := domain.NewTask("", "Test Task", "Description", enum.PriorityHigh, time.Now())
 	_, err := add.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func addWithEmptyTitle(t *testing.T) {
 	add := NewAdd(new(mockPersistenceSaver))
 	task := domain.NewTask("1", "", "Description", enum.PriorityHigh, time.Now())
 	_, err := add.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func addWithUnknownPriority(t *testing.T) {
 	add := NewAdd(new(mockPersistenceSaver))
 	task := domain.NewTask("1", "Test Task", "Description", enum.PriorityUnknown, time.Now())
 	_, err := add.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func addWithUnknownStatus(t *testing.T) {
@@ -93,18 +70,14 @@ func addWithUnknownStatus(t *testing.T) {
 	task := domain.NewTask("1", "Test Task", "Description", enum.PriorityHigh, time.Now(), "tag1", "tag2")
 	task.Status = enum.StatusUnknown
 	_, err := add.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func addWithPersistenceError(t *testing.T) {
 	add := NewAdd(&mockPersistenceSaverWithError{})
 	task := domain.NewTask("1", "Test Task", "Description", enum.PriorityHigh, time.Now(), "tag1", "tag2")
 	_, err := add.Save(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

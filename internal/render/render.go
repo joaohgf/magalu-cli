@@ -7,6 +7,7 @@ import (
 	"github.com/joaohgf/magalu-cli/internal/port"
 )
 
+// Render is responsible for rendering the output of the CLI application in different formats (table, JSON, YAML) based on the context value for the output type.
 type Render[T any] struct {
 	view port.View[T]
 }
@@ -15,6 +16,8 @@ func NewRender[T any](view port.View[T]) *Render[T] {
 	return &Render[T]{view: view}
 }
 
+// Render checks the context for the output type and renders the data accordingly using the provided view.
+// It supports rendering in JSON, YAML, or table format based on the output type specified in the context.
 func (r *Render[T]) Render(ctx context.Context, data T) error {
 	output, ok := ctx.Value(enum.OutputDefaultKey.String()).(enum.Type)
 	if !ok {

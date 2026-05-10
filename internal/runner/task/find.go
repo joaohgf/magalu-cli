@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// FindRunner is responsible for executing the logic to find a task based on the provided command-line arguments.
 type FindRunner struct {
 	useCase port.FindUseCase[*domain.Task]
 	render  port.Render[*domain.Task]
@@ -18,6 +19,9 @@ func NewFindRunner(
 	return &FindRunner{useCase: useCase, render: render}
 }
 
+// Run is the method that executes the logic for finding a task.
+// It retrieves the task ID from the command-line arguments, constructs a Task object with that ID,
+// and then calls the find use case to perform the search. Finally, it renders the result.
 func (fr *FindRunner) Run(cmd *cobra.Command, args []string) error {
 	task := &domain.Task{}
 	if len(args) > 0 {

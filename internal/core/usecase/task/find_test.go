@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestFindUseCase(t *testing.T) {
@@ -22,33 +23,22 @@ func findSuccessfully(t *testing.T) {
 	find := NewFind(new(mockPersistenceFinder))
 	task := &domain.Task{ID: "1"}
 	foundTask, err := find.Find(t.Context(), task)
-	if err != nil {
-		t.Fatalf("expected no errors, got %v", err)
-	}
-	if foundTask == nil {
-		t.Fatal("expected found task, got nil")
-	}
-	if foundTask.ID != task.ID {
-		t.Fatalf("expected found task ID to be %s, got %s", task.ID, foundTask.ID)
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, task.ID, foundTask.ID)
 }
 
 func findWithEmptyTaskID(t *testing.T) {
 	find := NewFind(new(mockPersistenceFinder))
 	task := &domain.Task{ID: ""}
 	_, err := find.Find(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func findWithErrorFindingTask(t *testing.T) {
 	find := NewFind(new(mockPersistenceFinderWithError))
 	task := &domain.Task{ID: "1"}
 	_, err := find.Find(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

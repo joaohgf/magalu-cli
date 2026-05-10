@@ -5,6 +5,7 @@ Tarefeiro is a command-line application written in Go to manage tasks locally.
 
 Before installing the CLI, make sure Go and Make are installed on your machine.
 
+- Go version: `1.26` (as defined in `go.mod`)
 - Official download page: https://go.dev/dl/
 - Official installation guide (macOS, Linux, Windows): https://go.dev/doc/install
 

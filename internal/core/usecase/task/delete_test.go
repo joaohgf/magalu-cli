@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteUseCase(t *testing.T) {
@@ -23,35 +24,27 @@ func deleteSuccessfully(t *testing.T) {
 	deleter := NewDelete(&mockPersistenceDeleter{})
 	task := &domain.Task{ID: "1"}
 	err := deleter.Delete(t.Context(), task)
-	if err != nil {
-		t.Fatalf("expected no errors, got %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func deleteWithNilTask(t *testing.T) {
 	deleter := NewDelete(&mockPersistenceDeleter{})
 	err := deleter.Delete(t.Context(), nil)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func deleteWithEmptyID(t *testing.T) {
 	deleter := NewDelete(&mockPersistenceDeleter{})
 	task := &domain.Task{ID: ""}
 	err := deleter.Delete(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 func deleteWithPersistenceError(t *testing.T) {
 	deleter := NewDelete(&mockPersistenceDeleterWithError{})
 	task := &domain.Task{ID: "1"}
 	err := deleter.Delete(t.Context(), task)
-	if err == nil {
-		t.Fatal("expected errors, got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

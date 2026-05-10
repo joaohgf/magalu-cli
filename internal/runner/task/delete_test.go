@@ -9,6 +9,7 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteRunner(t *testing.T) {
@@ -23,27 +24,21 @@ func runDeleteSuccessfully(t *testing.T) {
 	cmd := getDeleteCommand()
 	runner := NewDeleteRunner(new(mockDeleteUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
-	if err != nil {
-		t.Fatalf("expected no errors but got: %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func runDeleteWithError(t *testing.T) {
 	cmd := getDeleteCommand()
 	runner := NewDeleteRunner(new(mockDeleteUseCaseWithError), new(mockRender))
 	err := runner.Run(cmd, []string{"123"})
-	if err == nil {
-		t.Fatal("expected an errors but got nil")
-	}
+	assert.Error(t, err)
 }
 
 func runDeleteRenderWithError(t *testing.T) {
 	cmd := getDeleteCommand()
 	runner := NewDeleteRunner(new(mockDeleteUseCase), new(mockRenderWithError))
 	err := runner.Run(cmd, []string{"123"})
-	if err == nil {
-		t.Fatal("expected an errors but got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

@@ -8,6 +8,7 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestList(t *testing.T) {
@@ -19,21 +20,15 @@ func listSuccessfully(t *testing.T) {
 	useCase := NewList(new(mockPersistenceList))
 	target := domain.NewTaskFilter(nil)
 	result, err := useCase.All(t.Context(), target)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if result == nil {
-		t.Fatal("expected a result, got nil")
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, target, result)
 }
 
 func listWithError(t *testing.T) {
 	useCase := NewList(new(mockPersistenceListWithError))
 	target := domain.NewTaskFilter(nil)
 	_, err := useCase.All(t.Context(), target)
-	if err == nil {
-		t.Fatal("expected an error, got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

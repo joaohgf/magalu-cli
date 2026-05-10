@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"strings"
 
 	"github.com/joaohgf/magalu-cli/internal/cli/task"
 	"github.com/joaohgf/magalu-cli/internal/enum"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/root"
 	"github.com/nanobox-io/scribble"
+	"github.com/olekukonko/tablewriter"
+	"github.com/olekukonko/tablewriter/tw"
 	"github.com/spf13/cobra"
 )
 
@@ -50,14 +53,19 @@ func Execute(ctx context.Context) {
 		slog.Log(ctx, slog.LevelError, "failed to initialize database", "errors", err)
 		return
 	}
+	tableWriter := tablewriter.NewTable(
+		os.Stdout,
+		tablewriter.WithHeaderAlignment(tw.AlignLeft),
+		tablewriter.WithRowAutoWrap(tw.WrapNormal),
+	)
 	root := buildRootCommandHandler()
 	commands := []*cobra.Command{
-		task.BuildTaskAddCommandHandler(db),
-		task.BuildTaskListCommandHandler(db),
-		task.BuildTaskShowCommandHandler(db),
-		task.BuildTaskDoneCommandHandler(db),
-		task.BuildUpdateCommandHandler(db),
-		task.BuildDeleteCommandHandler(db),
+		task.BuildTaskAddCommandHandler(db, tableWriter),
+		task.BuildTaskDoneCommandHandler(db, tableWriter),
+		task.BuildUpdateCommandHandler(db, tableWriter),
+		task.BuildDeleteCommandHandler(db, tableWriter),
+		task.BuildTaskListCommandHandler(db, tableWriter),
+		task.BuildTaskShowCommandHandler(db, tableWriter),
 	}
 	root.AddCommand(commands...)
 	err = root.Execute()

@@ -9,6 +9,7 @@ import (
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddRunner_Run(t *testing.T) {
@@ -30,9 +31,7 @@ func runAddSuccessfully(t *testing.T) {
 	cmd.Flags().String("estimated_done_at", "2024-12-31 15:00:00", "")
 	runner := NewAddRunner(new(mockSaveUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"Test Task"})
-	if err != nil {
-		t.Fatalf("expected no errors but got: %v", err)
-	}
+	assert.NoError(t, err)
 }
 
 func runAddErrorParsingEstimatedDoneAt(t *testing.T) {
@@ -43,9 +42,7 @@ func runAddErrorParsingEstimatedDoneAt(t *testing.T) {
 	cmd.Flags().String("estimated_done_at", "invalid-date", "")
 	runner := NewAddRunner(new(mockSaveUseCase), new(mockRender))
 	err := runner.Run(cmd, []string{"Test Task"})
-	if err == nil {
-		t.Fatal("expected an errors but got nil")
-	}
+	assert.Error(t, err)
 }
 
 func runAddErrorSavingTask(t *testing.T) {
@@ -56,9 +53,7 @@ func runAddErrorSavingTask(t *testing.T) {
 	cmd.Flags().String("estimated_done_at", "", "")
 	runner := NewAddRunner(new(mockSaveUseCaseWithError), new(mockRender))
 	err := runner.Run(cmd, []string{""})
-	if err == nil {
-		t.Fatal("expected an errors but got nil")
-	}
+	assert.Error(t, err)
 }
 
 func runAddErrorRender(t *testing.T) {
@@ -69,9 +64,7 @@ func runAddErrorRender(t *testing.T) {
 	cmd.Flags().String("estimated_done_at", "", "")
 	runner := NewAddRunner(new(mockSaveUseCase), new(mockRenderWithError))
 	err := runner.Run(cmd, []string{""})
-	if err == nil {
-		t.Fatal("expected an errors but got nil")
-	}
+	assert.Error(t, err)
 }
 
 /*

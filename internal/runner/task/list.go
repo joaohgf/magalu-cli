@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ListRunner is responsible for executing the logic to list tasks based on the provided command-line arguments and flags.
 type ListRunner struct {
 	useCase port.FindAllUseCase[*domain.TaskFilter]
 	render  port.Render[*domain.TaskFilter]
@@ -23,6 +24,9 @@ func NewListRunner(
 	return &ListRunner{useCase: useCase, render: render}
 }
 
+// Run is the method that executes the logic for listing tasks.
+// It constructs a TaskFilter object using the provided command-line arguments and flags,
+// and then calls the find all use case to perform the search. Finally, it renders the result.
 func (lr *ListRunner) Run(cmd *cobra.Command, _ []string) error {
 	task := &domain.Task{}
 	task.Title = cmd.Flag("title").Value.String()
