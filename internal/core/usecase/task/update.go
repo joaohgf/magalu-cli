@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"time"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/errors"
@@ -59,5 +60,6 @@ func (u *Update) setFields(existing, target *domain.Task) *domain.Task {
 	if target.EstimatedDoneAt != nil && !target.EstimatedDoneAt.IsZero() {
 		existing.EstimatedDoneAt = target.EstimatedDoneAt
 	}
+	existing.UpdatedAt = new(time.Now())
 	return existing
 }

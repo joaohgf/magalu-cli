@@ -15,6 +15,7 @@ type Task struct {
 	Status          enum.Type  `json:"status,omitempty" yaml:"status"`
 	Priority        enum.Type  `json:"priority,omitempty" yaml:"priority"`
 	CreatedAt       time.Time  `json:"created_at,omitempty" yaml:"created_at"`
+	UpdatedAt       *time.Time `json:"updated_at,omitempty" yaml:"updated_at"`
 	DoneAt          *time.Time `json:"done_at,omitempty" yaml:"done_at"`
 	EstimatedDoneAt *time.Time `json:"estimated_done_at,omitempty" yaml:"estimated_done_at"`
 	Tags            []string   `json:"tags,omitempty" yaml:"tags"`

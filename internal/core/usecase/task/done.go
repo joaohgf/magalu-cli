@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
 	"github.com/joaohgf/magalu-cli/internal/port"
@@ -32,6 +33,7 @@ func (d *Done) Save(ctx context.Context, target *domain.Task) (*domain.Task, err
 		return nil, err
 	}
 	existing.MarkAsDone()
+	existing.UpdatedAt = new(time.Now())
 	updatedTask, err := d.saver.Save(ctx, existing)
 	if err != nil {
 		return nil, err
