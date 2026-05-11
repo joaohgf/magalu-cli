@@ -144,6 +144,8 @@ tarefeiro list
 List tasks with filters:
 
 ```bash
+-- Filter without any parameter
+tarefeiro list
 -- Filter by status and priority
 tarefeiro list -s done -p high
 -- Filter by title
@@ -152,8 +154,6 @@ tarefeiro list -t "study" -T work
 tarefeiro list -d "cli"
 -- Paginate results (page 2, 5 items per page)
 tarefeiro list -P 2 -S 5
--- Interactive selection mode
-tarefeiro list --interactive
 ```
 
 Show task details by ID:

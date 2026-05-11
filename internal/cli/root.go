@@ -3,12 +3,12 @@ package cli
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"os"
 	"strings"
 
 	"github.com/joaohgf/magalu-cli/internal/cli/task"
 	"github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/joaohgf/magalu-cli/internal/port"
 	handler "github.com/joaohgf/magalu-cli/internal/runner/root"
 	"github.com/nanobox-io/scribble"
 	"github.com/olekukonko/tablewriter"
@@ -45,13 +45,32 @@ func buildRootCommandHandler() *cobra.Command {
 	return cmd
 }
 
+func buildCommands(db *scribble.Driver, tableWriter *tablewriter.Table) ([]*cobra.Command, error) {
+	commands := []port.Command{
+		task.BuildTaskAddCommandHandler,
+		task.BuildTaskDoneCommandHandler,
+		task.BuildTaskUpdateCommandHandler,
+		task.BuildTaskDeleteCommandHandler,
+		task.BuildTaskListCommandHandler,
+		task.BuildTaskShowCommandHandler,
+	}
+	var cobraCommands []*cobra.Command
+	for _, command := range commands {
+		cmd, err := command(db, tableWriter)
+		if err != nil {
+			return nil, err
+		}
+		cobraCommands = append(cobraCommands, cmd)
+	}
+	return cobraCommands, nil
+}
+
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute(ctx context.Context) {
+func Execute(ctx context.Context) error {
 	db, err := scribble.New("./data/", nil)
 	if err != nil {
-		slog.Log(ctx, slog.LevelError, "failed to initialize database", "errors", err)
-		return
+		return err
 	}
 	tableWriter := tablewriter.NewTable(
 		os.Stdout,
@@ -59,17 +78,11 @@ func Execute(ctx context.Context) {
 		tablewriter.WithRowAutoWrap(tw.WrapNormal),
 	)
 	root := buildRootCommandHandler()
-	commands := []*cobra.Command{
-		task.BuildTaskAddCommandHandler(db, tableWriter),
-		task.BuildTaskDoneCommandHandler(db, tableWriter),
-		task.BuildUpdateCommandHandler(db, tableWriter),
-		task.BuildDeleteCommandHandler(db, tableWriter),
-		task.BuildTaskListCommandHandler(db, tableWriter),
-		task.BuildTaskShowCommandHandler(db, tableWriter),
+	commands, err := buildCommands(db, tableWriter)
+	if err != nil {
+		return err
 	}
 	root.AddCommand(commands...)
 	err = root.Execute()
-	if err != nil {
-		slog.Log(ctx, slog.LevelError, "failed to execute command", "errors", err)
-	}
+	return err
 }

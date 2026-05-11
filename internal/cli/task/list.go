@@ -20,19 +20,18 @@ const (
 )
 
 // BuildTaskListCommandHandler builds the list subcommand runner for the task command.
-func BuildTaskListCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) *cobra.Command {
+func BuildTaskListCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) (*cobra.Command, error) {
 	repository := persistence.NewServiceLister[*domain.Task, *domain.TaskFilter](db)
 	rule := usecase.NewList(repository)
 	view := rendertask.NewList(tableWriter)
 	renderer := render.NewRender[*domain.TaskFilter](view)
 	runner := handler.NewListRunner(rule, renderer)
-	cmd := buildTaskCommandHandler(
+	cmd, err := buildTaskCommandHandler(
 		taskListUse, taskListShortDescription, taskListLongDescription, runner,
 		withDescriptionFlag(), withStatusFlag(), withPriorityFlag(),
 		withStringField("size", "S", "Number of tasks to return"),
 		withStringField("page", "P", "Page number for pagination"),
 		withStringField("title", "t", "Title filter (contains)"),
-		withBoolField("interactive", "i", false, "Enable interactive selection after table rendering"),
 	)
-	return cmd
+	return cmd, err
 }

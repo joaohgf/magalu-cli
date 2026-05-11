@@ -20,7 +20,7 @@ const (
 )
 
 // BuildTaskDoneCommandHandler builds the done subcommand runner for the task command.
-func BuildTaskDoneCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) *cobra.Command {
+func BuildTaskDoneCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) (*cobra.Command, error) {
 	finder := persistence.NewServiceFinder[*domain.Task](db)
 	saver := persistence.NewServiceSaver[*domain.Task](db)
 	rule := usecase.NewDone(saver, finder)
@@ -34,5 +34,5 @@ func BuildTaskDoneCommandHandler(db *scribble.Driver, tableWriter *tablewriter.T
 		RunE:  runner.Run,
 		Args:  cobra.ExactArgs(1),
 	}
-	return cmd
+	return cmd, nil
 }

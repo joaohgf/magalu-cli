@@ -18,8 +18,8 @@ const (
 	taskDeleteLong  = "Delete a task by its ID. This action is irreversible."
 )
 
-// BuildDeleteCommandHandler builds the delete subcommand runner for the task command.
-func BuildDeleteCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) *cobra.Command {
+// BuildTaskDeleteCommandHandler builds the delete subcommand runner for the task command.
+func BuildTaskDeleteCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) (*cobra.Command, error) {
 	repository := persistence.NewServiceDeleter[*domain.Task](db)
 	rule := usecase.NewDelete(repository)
 	view := taskrender.NewDeleteView(tableWriter)
@@ -32,5 +32,5 @@ func BuildDeleteCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Tab
 		Args:  cobra.ExactArgs(1),
 		RunE:  runner.Run,
 	}
-	return cmd
+	return cmd, nil
 }

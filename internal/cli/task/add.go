@@ -20,16 +20,16 @@ const (
 )
 
 // BuildTaskAddCommandHandler builds the add subcommand runner for the task command.
-func BuildTaskAddCommandHandler(db *scribble.Driver, table *tablewriter.Table) *cobra.Command {
+func BuildTaskAddCommandHandler(db *scribble.Driver, table *tablewriter.Table) (*cobra.Command, error) {
 	repository := persistence.NewServiceSaver[*domain.Task](db)
 	rule := usecase.NewAdd(repository)
 	view := taskrender.NewAddView(table)
 	renderer := render.NewRender[*domain.Task](view)
 	runner := handler.NewAddRunner(rule, renderer)
-	cmd := buildTaskCommandHandler(
+	cmd, err := buildTaskCommandHandler(
 		taskAddUse, taskAddShortDescription, taskAddLongDescription, runner,
 		withArgs(cobra.ExactArgs(1)),
 		withPriorityFlag(), withDescriptionFlag(), withEstimatedDoneDateFlag(), withTagsFlag(),
 	)
-	return cmd
+	return cmd, err
 }

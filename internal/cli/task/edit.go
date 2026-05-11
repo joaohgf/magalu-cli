@@ -18,18 +18,18 @@ const (
 	taskUpdateLong  = "Update a task by its ID. You can update the title, description, priority, estimated done date, and tags."
 )
 
-// BuildUpdateCommandHandler builds the update subcommand runner for the task command.
-func BuildUpdateCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) *cobra.Command {
+// BuildTaskUpdateCommandHandler builds the update subcommand runner for the task command.
+func BuildTaskUpdateCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) (*cobra.Command, error) {
 	saver := persistence.NewServiceSaver[*domain.Task](db)
 	finder := persistence.NewServiceFinder[*domain.Task](db)
 	rule := usecase.NewUpdate(saver, finder)
 	view := taskrender.NewUpdateView(tableWriter)
 	renderer := render.NewRender[*domain.Task](view)
 	runner := handler.NewUpdateRunner(rule, renderer)
-	cmd := buildTaskCommandHandler(
+	cmd, err := buildTaskCommandHandler(
 		taskUpdateUse, taskUpdateShort, taskUpdateLong, runner,
 		withArgs(cobra.ExactArgs(1)),
 		withPriorityFlag(), withDescriptionFlag(), withEstimatedDoneDateFlag(), withTagsFlag(),
 	)
-	return cmd
+	return cmd, err
 }

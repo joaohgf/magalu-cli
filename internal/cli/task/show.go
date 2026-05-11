@@ -20,7 +20,7 @@ const (
 )
 
 // BuildTaskShowCommandHandler builds the show subcommand runner for the task command.
-func BuildTaskShowCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) *cobra.Command {
+func BuildTaskShowCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Table) (*cobra.Command, error) {
 	repository := persistence.NewServiceFinder[*domain.Task](db)
 	rule := usecase.NewFind(repository)
 	view := rendertask.NewDetailView(tableWriter)
@@ -33,5 +33,5 @@ func BuildTaskShowCommandHandler(db *scribble.Driver, tableWriter *tablewriter.T
 		Args:  cobra.ExactArgs(1),
 		RunE:  runner.Run,
 	}
-	return cmd
+	return cmd, nil
 }

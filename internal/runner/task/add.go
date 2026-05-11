@@ -31,7 +31,10 @@ func (cr *AddRunner) Run(cmd *cobra.Command, args []string) error {
 	id := ulid.Make()
 	ts := id.Time()
 	createdAt := ulid.Time(ts)
-	tags, _ := cmd.Flags().GetStringSlice("tags")
+	tags, err := cmd.Flags().GetStringSlice("tags")
+	if err != nil {
+		return errors.Invalid(fmt.Sprintf("failed to parse tags: %v", err))
+	}
 	var title string
 	if len(args) > 0 {
 		title = args[0]
