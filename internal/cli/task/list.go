@@ -26,17 +26,13 @@ func BuildTaskListCommandHandler(db *scribble.Driver, tableWriter *tablewriter.T
 	view := rendertask.NewList(tableWriter)
 	renderer := render.NewRender[*domain.TaskFilter](view)
 	runner := handler.NewListRunner(rule, renderer)
-	cmd := &cobra.Command{
-		Use:   taskListUse,
-		Short: taskListShortDescription,
-		Long:  taskListLongDescription,
-		RunE:  runner.Run,
-	}
-	cmd.Flags().StringP("title", "t", "", "Title filter (contains)")
-	cmd.Flags().StringP("description", "d", "", "Description filter (contains)")
-	cmd.Flags().StringP("status", "s", "", "Status of the task (in_progress, done)")
-	cmd.Flags().StringP("priority", "p", "", "Priority of the task (low, medium, high)")
-	cmd.Flags().StringP("size", "S", "", "Number of tasks to return")
-	cmd.Flags().StringP("page", "P", "", "Page number for pagination")
+	cmd := buildTaskCommandHandler(
+		taskListUse, taskListShortDescription, taskListLongDescription, runner,
+		withDescriptionFlag(), withStatusFlag(), withPriorityFlag(),
+		withStringField("size", "S", "Number of tasks to return"),
+		withStringField("page", "P", "Page number for pagination"),
+		withStringField("title", "t", "Title filter (contains)"),
+		withBoolField("interactive", "i", false, "Enable interactive selection after table rendering"),
+	)
 	return cmd
 }

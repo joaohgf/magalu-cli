@@ -26,17 +26,10 @@ func BuildUpdateCommandHandler(db *scribble.Driver, tableWriter *tablewriter.Tab
 	view := taskrender.NewUpdateView(tableWriter)
 	renderer := render.NewRender[*domain.Task](view)
 	runner := handler.NewUpdateRunner(rule, renderer)
-	cmd := &cobra.Command{
-		Use:   taskUpdateUse,
-		Short: taskUpdateShort,
-		Long:  taskUpdateLong,
-		Args:  cobra.ExactArgs(1),
-		RunE:  runner.Run,
-	}
-	cmd.Flags().StringP("title", "t", "", "Title of the task")
-	cmd.Flags().StringP("description", "d", "", "Description of the task")
-	cmd.Flags().StringP("priority", "p", "", "Priority of the task (low, medium, high)")
-	cmd.Flags().StringP("estimated_done_at", "e", "", "Estimated done date for the task (YYYY-MM-DD HH:MM:SS format)")
-	cmd.Flags().StringSliceP("tags", "T", []string{}, "Comma-separated list of tags for the task")
+	cmd := buildTaskCommandHandler(
+		taskUpdateUse, taskUpdateShort, taskUpdateLong, runner,
+		withArgs(cobra.ExactArgs(1)),
+		withPriorityFlag(), withDescriptionFlag(), withEstimatedDoneDateFlag(), withTagsFlag(),
+	)
 	return cmd
 }

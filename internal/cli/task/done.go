@@ -32,6 +32,7 @@ func BuildTaskDoneCommandHandler(db *scribble.Driver, tableWriter *tablewriter.T
 		Short: taskDoneShortDescription,
 		Long:  taskDoneLongDescription,
 		RunE:  runner.Run,
+		Args:  cobra.ExactArgs(1),
 	}
 	return cmd
 }

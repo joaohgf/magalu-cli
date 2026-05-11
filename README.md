@@ -62,6 +62,27 @@ go build -o ./ ./cmd/tarefeiro
 ./tarefeiro --help
 ```
 
+### Docker (optional)
+
+Build the image:
+
+```bash
+docker build -t tarefeiro:local .
+```
+
+Run the CLI help:
+
+```bash
+docker run --rm tarefeiro:local --help
+```
+
+Persist tasks locally by mounting the project `data` directory:
+
+```bash
+docker run --rm -v "$(pwd)/data:/app/data" tarefeiro:local add "Study Go" --priority high --tags dev,estudos
+docker run --rm -v "$(pwd)/data:/app/data" tarefeiro:local list
+```
+
 ### Makefile commands
 
 List all available automation commands:
@@ -83,6 +104,30 @@ Show all available commands:
 ```bash
 tarefeiro --help
 ```
+
+### Autocomplete (zsh)
+
+Load autocomplete for the current session:
+
+```bash
+source <(tarefeiro completion zsh)
+```
+
+Persist for new terminals:
+
+```bash
+mkdir -p "$(brew --prefix)/share/zsh/site-functions"
+tarefeiro completion zsh > "$(brew --prefix)/share/zsh/site-functions/_tarefeiro"
+autoload -U compinit && compinit
+```
+
+Validate that `add --priority` suggestions are available:
+
+```bash
+tarefeiro __complete add --priority ""
+```
+
+Expected suggestions include: `low`, `medium`, `high`.
 
 Add a task:
 
@@ -107,6 +152,8 @@ tarefeiro list -t "study" -T work
 tarefeiro list -d "cli"
 -- Paginate results (page 2, 5 items per page)
 tarefeiro list -P 2 -S 5
+-- Interactive selection mode
+tarefeiro list --interactive
 ```
 
 Show task details by ID:
@@ -141,8 +188,3 @@ tarefeiro list -o table
 tarefeiro list -o json
 tarefeiro show "01KR8021T5FZE79CSANG5FACK0" -o yaml
 ```
-
-### Test coverage
-
-Coverage is calculated by CI from unit tests and exposed as a badge in this README.
-Click the badge to open the unit test workflow runs.

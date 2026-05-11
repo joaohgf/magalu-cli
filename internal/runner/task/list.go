@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/joaohgf/magalu-cli/internal/core/domain"
-	enum "github.com/joaohgf/magalu-cli/internal/enum"
+	"github.com/joaohgf/magalu-cli/internal/enum"
 	"github.com/joaohgf/magalu-cli/internal/errors"
 	"github.com/joaohgf/magalu-cli/internal/port"
 	"github.com/spf13/cobra"
